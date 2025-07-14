@@ -16,7 +16,7 @@
 #define SCREEN_HEIGHT 600*SCREEN_SCALE
 
 
-static Game g_available_games[] = {
+static Game_Mode g_game_modes[] = {
 	{"X01", "", NULL}
 };
 
@@ -43,7 +43,9 @@ int main(void)
 		return 1;
 	}
 
-	match.game = &g_available_games[0];
+	match_set_state(&match, GAME_STATE_WELCOME);
+
+	match.game = g_game_modes[0];
 	match.legs_for_win = 3;
 	match.round        = 11;
 	match_add_player(&match, "Gandalf");

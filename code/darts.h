@@ -43,10 +43,25 @@ typedef struct {
 	char name[255];
 	char modifiers[255];
 	void *data;
-} Game;
+} Game_Mode;
+
+
+typedef enum {
+	GAME_STATE_WELCOME,
+	GAME_STATE_SELECT_PLAYERS,
+	GAME_STATE_GAME_ON
+} Game_State;
+
+typedef enum {
+	DKEY_NONE,
+	DKEY_ENTER
+} Game_Keypress;
 
 typedef struct {
-	Game   *game;
+	Game_Keypress key;
+	Game_State state;
+	char status_text[255];
+	Game_Mode  game;
 	Turn   player_turn;
 	Player players[MAX_PLAYER_COUNT];
 	size_t player_count;
@@ -54,5 +69,6 @@ typedef struct {
 	size_t round;
 } Match;
 
+void match_set_state(Match *match, Game_State state);
 
 #endif // DARTS_H

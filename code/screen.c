@@ -5,6 +5,7 @@
 #include <SDL.h>
 #include <SDL_video.h>
 #include <SDL_ttf.h>
+#include <SDL_keycode.h>
 
 #include "libcutils/logger.h"
 #include "libcutils/util_makros.h"
@@ -35,18 +36,23 @@ static SDL_Color g_color_black  = {0, 0 , 0, 255};
 #define FONT_SIZE_GAME_NAME    FONT_SIZE_L
 #define FONT_SIZE_DART_SCORE   FONT_SIZE_L
 #define FONT_SIZE_PLAYER_SCORE FONT_SIZE_XL
-
+#define FONT_SIZE_STATUS_MSG   FONT_SIZE_L
 
 
 #define BORDER_WIDTH 10
 #define PLAYER_BOX_SIZE ((800-(2+MAX_PLAYER_COUNT)*BORDER_WIDTH)/MAX_PLAYER_COUNT)
 
-#define Y_OFFSET_HEADER BORDER_WIDTH
-#define Y_OFFSET_PLAYER 120
-#define Y_OFFSET_TURN   400
+#define STATUS_BOX_WIDTH  LOGICAL_WIDTH-(2*BORDER_WIDTH)
+#define STATUS_BOX_HEIGHT 50
 
 #define TURN_BOX_WIDTH   100
 #define TURN_BOX_HEIGHT  50
+
+#define Y_OFFSET_HEADER     BORDER_WIDTH
+#define Y_OFFSET_PLAYER     120
+#define Y_OFFSET_TURN       400
+#define Y_OFFSET_STATUS_MSG LOGICAL_HEIGHT-BORDER_WIDTH-STATUS_BOX_HEIGHT
+
 
 
 typedef enum {
@@ -57,7 +63,7 @@ typedef enum {
 static void screen_set_color(Screen *screen, Screen_Color color)
 {
 	switch(color) {
-	case SCREEN_COLOR_BLACK: 
+	case SCREEN_COLOR_BLACK:
 		SDL_SetRenderDrawColor(screen->renderer, 0, 0, 0, 255);
 		break;
 	case SCREEN_COLOR_GREY:
@@ -133,11 +139,11 @@ static void screen_show_header(Screen *screen, Match *match)
 	const int x = BORDER_WIDTH;
 	int       y = Y_OFFSET_HEADER;
 
-		
-	screen_draw_text(screen, x, y, FONT_SIZE_GAME_NAME, "Game: %s", match->game->name);
+
+	screen_draw_text(screen, x, y, FONT_SIZE_GAME_NAME, "Game: %s", match->game.name);
 	y+= FONT_SIZE_GAME_NAME+5;
 
-	screen_draw_text(screen, x, y, FONT_SIZE_GAME_MODS, match->game->modifiers);
+	screen_draw_text(screen, x, y, FONT_SIZE_GAME_MODS, match->game.modifiers);
 	y+= FONT_SIZE_GAME_STATS+5;
 
 	screen_draw_text(screen, x, y, FONT_SIZE_GAME_STATS, "Round: %03zu   Legs for win: %zu", match->round, match->legs_for_win);
@@ -172,8 +178,8 @@ static void screen_show_turn(Screen *screen, Match *match)
 		SDL_RenderDrawRect(screen->renderer, &outlineRect);
 
 		if (dart->score != -1) {
-			screen_draw_text(screen, x, y, FONT_SIZE_DART_SCORE, "%c%d", 
-				multiplicator_as_char(dart->multiplicator), 
+			screen_draw_text(screen, x, y, FONT_SIZE_DART_SCORE, "%c%d",
+				multiplicator_as_char(dart->multiplicator),
 				dart->score);
 		}
 		else if (dart->score == 0) {
@@ -192,25 +198,75 @@ static void screen_show_players(Screen *screen, Match *match)
 		const int x = (1+i)*BORDER_WIDTH + (i*PLAYER_BOX_SIZE);
 		const int y = Y_OFFSET_PLAYER;
 
-
-		// Define an outlined rectangle
 		SDL_Rect outlineRect = {x, y, PLAYER_BOX_SIZE, PLAYER_BOX_SIZE}; // x, y, width, height
 		if (player->is_active) {
-			SDL_SetRenderDrawColor(screen->renderer, 210, 210, 210, 255);
+			screen_set_color(screen, SCREEN_COLOR_GREY);;
 			SDL_RenderFillRect(screen->renderer, &outlineRect);
 		}
-		SDL_SetRenderDrawColor(screen->renderer, 0, 0, 0, 255); // Green color
-		SDL_RenderDrawRect(screen->renderer, &outlineRect); // Draw outlined rectangle
+		screen_set_color(screen, SCREEN_COLOR_BLACK);
+		SDL_RenderDrawRect(screen->renderer, &outlineRect);
 
-		
-		// Present the renderer
-		//SDL_RenderPresent(screen->renderer);
-		SDL_SetRenderDrawColor(screen->renderer, 0, 0, 0, 255); // Green color
-		screen_draw_text(screen, x+10, y+10, FONT_SIZE_PLAYER_NAME, player->name);
-		screen_draw_text(screen, x+10, y+50, FONT_SIZE_PLAYER_SCORE, "%d", player->score);
+		screen_draw_text(screen, x+10, y+10,  FONT_SIZE_PLAYER_NAME,  player->name);
+		screen_draw_text(screen, x+10, y+50,  FONT_SIZE_PLAYER_SCORE, "%d", player->score);
 		screen_draw_text(screen, x+10, y+120, FONT_SIZE_PLAYER_STATS, "legs: %d", player->legs_won);
 	}
 }
+
+static void screen_show_status(Screen *screen, Match *match)
+{
+	const int x = BORDER_WIDTH;
+	const int y = Y_OFFSET_STATUS_MSG;
+
+	screen_set_color(screen, SCREEN_COLOR_BLACK);
+
+	SDL_Rect outlineRect = {x, y, STATUS_BOX_WIDTH, STATUS_BOX_HEIGHT}; // x, y, width, height
+	SDL_RenderDrawRect(screen->renderer, &outlineRect);
+	screen_draw_text(screen, x+5, y+5, FONT_SIZE_STATUS_MSG, match->status_text);
+}
+
+static void screen_show_welcome(Screen *screen, Match *match)
+{
+	(void) match;
+
+	const int x = BORDER_WIDTH;
+	const int y = BORDER_WIDTH;
+
+	screen_set_color(screen, SCREEN_COLOR_BLACK);
+	screen_draw_text(screen, x, y, FONT_SIZE_XL, "Welcome to Dartosphere!");
+
+}
+
+static void screen_handle_states(Screen *screen, Match *match)
+{
+	switch (match->state) {
+
+	case GAME_STATE_WELCOME:
+		screen_show_welcome(screen, match);
+		screen_show_status(screen, match);
+
+		if (match->key == DKEY_ENTER) match_set_state(match, GAME_STATE_SELECT_PLAYERS);
+		break;
+
+	case GAME_STATE_SELECT_PLAYERS:
+	case GAME_STATE_GAME_ON:
+		screen_show_header(screen, match);
+		screen_show_players(screen, match);
+		screen_show_turn(screen, match);
+		screen_show_status(screen, match);
+
+		if (match->key == DKEY_ENTER) match_set_state(match, GAME_STATE_WELCOME);
+		break;
+	}
+}
+
+
+
+
+
+
+
+
+
 
 Result screen_init(Screen *screen, int width, int height)
 {
@@ -273,9 +329,24 @@ bool screen_refresh(Screen *screen, Match *match)
 	bool quit = false;
 
 	SDL_Event event;
+
+	match->key = DKEY_NONE;
+
 	while (SDL_PollEvent(&event)) {
-		if (event.type == SDL_QUIT) {
+
+		switch (event.type) {
+
+		case SDL_QUIT:
 			quit = true;
+			break;
+		case SDL_KEYDOWN: {
+			SDL_Keysym *key = &event.key.keysym;
+
+			switch(key->sym) {
+
+			case SDLK_RETURN: match->key = DKEY_ENTER; break;
+			}
+		}
 		}
 	}
 
@@ -288,9 +359,7 @@ bool screen_refresh(Screen *screen, Match *match)
 
 
 	// add drawing routines here
-	screen_show_header(screen, match);
-	screen_show_players(screen, match);
-	screen_show_turn(screen, match);
+	screen_handle_states(screen, match);
 	// -------------------
 
 
