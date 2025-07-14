@@ -9,19 +9,23 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "ui_sdl.h"
+#include "screen.h"
 
 #define SCREEN_SCALE  1.0f
 #define SCREEN_WIDTH  800*SCREEN_SCALE
 #define SCREEN_HEIGHT 600*SCREEN_SCALE
 
 
+static Game g_available_games[] = {
+	{"X01", "", NULL}
+};
 
-void game_add_player(Game *game, const char *player_name)
+
+void match_add_player(Match *match, const char *player_name)
 {
-	if (game->player_count < MAX_PLAYER_COUNT) {
-		strncpy(game->players[game->player_count].name, player_name, MAX_PLAYER_NAME_LEN);
-		game->player_count++;
+	if (match->player_count < MAX_PLAYER_COUNT) {
+		strncpy(match->players[match->player_count].name, player_name, MAX_PLAYER_NAME_LEN);
+		match->player_count++;
 	}
 }
 
@@ -30,48 +34,47 @@ int main(void)
 {
 	log_info("Application started!\n");
 
-	Game game = {0};
-	Darts_Gui ui = {
-		.init = ui_sdl_init,
-		.refresh = ui_sdl_refresh,
-		.destroy = ui_sdl_destroy
-	};
+	Match match = {0};
+	Screen screen = {0};
 
-	Result r = ui.init(SCREEN_WIDTH, SCREEN_HEIGHT);
+	Result r = screen_init(&screen, SCREEN_WIDTH, SCREEN_HEIGHT);
 	if (!r.success) {
-		//log_error("failed to load ui: %s\n", r.msg);
+		log_error("failed to load screen: %s\n", r.msg);
 		return 1;
 	}
 
-	game_add_player(&game, "Gandalf");
-	game_add_player(&game, "Frodo");
-	game_add_player(&game, "Boromir");
-	game_add_player(&game, "Legolas");
-	game_add_player(&game, "Aragorn");
+	match.game = &g_available_games[0];
+	match.legs_for_win = 3;
+	match.round        = 11;
+	match_add_player(&match, "Gandalf");
+	match_add_player(&match, "Frodo");
+	match_add_player(&match, "Boromir");
+	match_add_player(&match, "Legolas");
+	match_add_player(&match, "Aragorn");
 
-	game.players[1].is_active = true;
-	
-	game.player_turn.dart[0].multiplicator = DARTS_SINGLE;
-	game.player_turn.dart[0].score         = 18;
-	game.player_turn.dart[0].is_active     = false;
+	match.players[1].is_active = true;
 
-	game.player_turn.dart[1].multiplicator = DARTS_DOUBLE;
-	game.player_turn.dart[1].score         = 20;
-	game.player_turn.dart[1].is_active     = false;
+	match.player_turn.dart[0].multiplicator = DARTS_SINGLE;
+	match.player_turn.dart[0].score         = 18;
+	match.player_turn.dart[0].is_active     = false;
 
-	game.player_turn.dart[2].multiplicator = DARTS_DOUBLE;
-	game.player_turn.dart[2].score         = -1;
-	game.player_turn.dart[2].is_active     = true;
+	match.player_turn.dart[1].multiplicator = DARTS_DOUBLE;
+	match.player_turn.dart[1].score         = 20;
+	match.player_turn.dart[1].is_active     = false;
 
-	for( size_t i=0; i < game.player_count; ++i) {
-		game.players[i].score = 108*i;
+	match.player_turn.dart[2].multiplicator = DARTS_DOUBLE;
+	match.player_turn.dart[2].score         = -1;
+	match.player_turn.dart[2].is_active     = true;
+
+	for( size_t i=0; i < match.player_count; ++i) {
+		match.players[i].score = 108*i;
 	}
 
 	bool quit = false;
 
 	while(!quit) {
-		quit = ui.refresh(&game);
+		quit = screen_refresh(&screen, &match);
 	}
 
-	ui.destroy();
+	screen_destroy(&screen);
 }

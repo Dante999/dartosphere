@@ -7,7 +7,7 @@ LIBS=`sdl2-config --cflags --libs`
 all:
 	${CC} ${CC_FLAGS} -g -o ${PROJECT} \
 		main.c \
-		ui_sdl.c \
+		screen.c \
 		darts.c \
 		${LIBS} \
 		${LD_FLAGS}

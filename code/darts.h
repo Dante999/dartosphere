@@ -9,7 +9,6 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-#include "libcutils/result.h"
 
 typedef struct {
 	char name[MAX_PLAYER_NAME_LEN];
@@ -39,20 +38,21 @@ typedef struct {
 	Dart dart[3];
 } Turn;
 
+
 typedef struct {
+	char name[255];
+	char modifiers[255];
+	void *data;
+} Game;
+
+typedef struct {
+	Game   *game;
 	Turn   player_turn;
 	Player players[MAX_PLAYER_COUNT];
 	size_t player_count;
-} Game;
-
-
-typedef struct {
-	Result (*init)(int width, int height);
-	bool (*refresh)(Game *game);
-	void (*destroy)(void);
-} Darts_Gui;
-
-
+	size_t legs_for_win;
+	size_t round;
+} Match;
 
 
 #endif // DARTS_H
