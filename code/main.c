@@ -16,18 +16,11 @@
 #define SCREEN_HEIGHT 600*SCREEN_SCALE
 
 
-static Game_Mode g_game_modes[] = {
-	{"X01", "", NULL}
-};
+//static Game_Mode g_game_modes[] = {
+//	{"X01", "", NULL}
+//};
 
 
-void match_add_player(Match *match, const char *player_name)
-{
-	if (match->player_count < MAX_PLAYER_COUNT) {
-		strncpy(match->players[match->player_count].name, player_name, MAX_PLAYER_NAME_LEN);
-		match->player_count++;
-	}
-}
 
 
 int main(void)
@@ -45,6 +38,7 @@ int main(void)
 
 	match_set_state(&match, GAME_STATE_WELCOME);
 
+#if 0
 	match.game = g_game_modes[0];
 	match.legs_for_win = 3;
 	match.round        = 11;
@@ -67,10 +61,10 @@ int main(void)
 	match.player_turn.dart[2].multiplicator = DARTS_DOUBLE;
 	match.player_turn.dart[2].score         = -1;
 	match.player_turn.dart[2].is_active     = true;
-
 	for( size_t i=0; i < match.player_count; ++i) {
 		match.players[i].score = 108*i;
 	}
+#endif
 
 	bool quit = false;
 

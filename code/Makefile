@@ -8,6 +8,9 @@ all:
 	${CC} ${CC_FLAGS} -g -o ${PROJECT} \
 		main.c \
 		screen.c \
+		screen_game_on.c \
+		screen_welcome.c \
+		screen_player_selection.c \
 		darts.c \
 		${LIBS} \
 		${LD_FLAGS}

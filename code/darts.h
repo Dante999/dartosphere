@@ -49,12 +49,23 @@ typedef struct {
 typedef enum {
 	GAME_STATE_WELCOME,
 	GAME_STATE_SELECT_PLAYERS,
+	GAME_STATE_SELECT_GAME,
 	GAME_STATE_GAME_ON
 } Game_State;
 
 typedef enum {
 	DKEY_NONE,
-	DKEY_ENTER
+	DKEY_ENTER,
+	DKEY_0,
+	DKEY_1,
+	DKEY_2,
+	DKEY_3,
+	DKEY_4,
+	DKEY_5,
+	DKEY_6,
+	DKEY_7,
+	DKEY_8,
+	DKEY_9
 } Game_Keypress;
 
 typedef struct {
@@ -70,5 +81,8 @@ typedef struct {
 } Match;
 
 void match_set_state(Match *match, Game_State state);
+void match_add_player(Match *match, const char *name);
+void match_remove_player(Match *match);
+
 
 #endif // DARTS_H
