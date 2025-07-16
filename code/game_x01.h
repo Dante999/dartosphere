@@ -9,8 +9,16 @@ typedef enum {
 } X01_Score;
 
 typedef enum {
-	X01_MODE_STRAIGHT_IN_AND_OUT,
-} X01_MODE;
+	X01_MODE_STRAIGHT,
+	X01_MODE_DOUBLE,
+	X01_MODE_MASTER
+} X01_Mode;
+
+struct {
+	X01_Score start_score;
+	X01_Mode  mode_in;
+	X01_Mode  mode_out;
+} Game_X01;
 
 
 #endif // GAME_X01_H

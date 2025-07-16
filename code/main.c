@@ -4,9 +4,9 @@
 #define LOGGER_IMPLEMENTATION
 #include "libcutils/logger.h"
 
+#include "libcutils/util_makros.h"
 #include "darts.h"
 
-#include <string.h>
 #include <unistd.h>
 
 #include "screen.h"
@@ -16,9 +16,10 @@
 #define SCREEN_HEIGHT 600*SCREEN_SCALE
 
 
-//static Game_Mode g_game_modes[] = {
-//	{"X01", "", NULL}
-//};
+static Game_Mode g_game_modes[] = {
+	{"X01"             , "Start with a given score and reduce it as first" },
+	{"Around the Clock", "Hit all fields" }
+};
 
 
 
@@ -36,8 +37,8 @@ int main(void)
 		return 1;
 	}
 
-	match_set_state(&match, GAME_STATE_WELCOME);
-
+	match_init(&match);
+	match_set_available_game_modes(&match, g_game_modes, ARRAY_SIZE(g_game_modes));
 #if 0
 	match.game = g_game_modes[0];
 	match.legs_for_win = 3;

@@ -17,10 +17,10 @@ static void screen_show_header(Screen *screen, Match *match)
 	int       y = Y_OFFSET_HEADER;
 
 
-	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_L, "Game: %s", match->game.name);
+	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_L, "Game: %s", match->game_mode->name);
 	y+= SCREEN_FONT_SIZE_L+5;
 
-	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_S, match->game.modifiers);
+	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_S, ""/*match->game.modifiers*/);
 	y+= SCREEN_FONT_SIZE_S+5;
 
 	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_M, "Round: %03zu   Legs for win: %zu", match->round, match->legs_for_win);
@@ -78,12 +78,12 @@ static void screen_show_turn(Screen *screen, Match *match)
 		screen_set_color(screen, SCREEN_COLOR_BLACK);
 		SDL_RenderDrawRect(screen->renderer, &outlineRect);
 
-		if (dart->score != -1) {
+		if (dart->field_value != -1) {
 			screen_draw_text(screen, x, y-3, SCREEN_FONT_SIZE_XL, "%c%d",
-				multiplicator_as_char(dart->multiplicator),
-				dart->score);
+				field_type_as_char(dart->field_type),
+				dart->field_value);
 		}
-		else if (dart->score == 0) {
+		else if (dart->field_value == 0) {
 			screen_draw_text(screen, x, y-3, SCREEN_FONT_SIZE_XL, "MISS");
 		}
 
@@ -95,6 +95,8 @@ void screen_game_on(Screen *screen, Match *match)
 	screen_show_header(screen, match);
 	screen_show_players(screen, match);
 	screen_show_turn(screen, match);
+
+	if (match->key == DKEY_ENTER) match_next_state(match);
 }
 
 

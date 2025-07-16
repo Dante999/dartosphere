@@ -2,9 +2,9 @@
 
 #include "string.h"
 
-char multiplicator_as_char(Multiplicator m)
+char field_type_as_char(Field_Type type)
 {
-	switch(m) {
+	switch(type) {
 		case DARTS_SINGLE : return 'S';
 		case DARTS_DOUBLE : return 'D';
 		case DARTS_TRIPPLE: return 'T';
@@ -19,29 +19,67 @@ void match_set_status(Match *match, const char *status)
 }
 
 
-void match_set_state(Match *match, Game_State state)
+void match_init(Match *match)
 {
-	switch(state) {
+	match_set_status(match, "Press <ENTER> to continue");
+	match->state = GAME_STATE_WELCOME;
+	match->player_count = 0;
+	match_add_player(match, "Player 1");
 
+	match->legs_for_win = 3;
+	match->round        = 0;
+}
+
+
+void match_previous_state(Match *match) {
+	switch(match->state) {
 	case GAME_STATE_WELCOME:
-		match_set_status(match, "Press <ENTER> to continue");
-		match->player_count = 0;
-		match_add_player(match, "Player 1");
-
-		match->legs_for_win = 3;
-		match->round        = 0;
 		break;
 
 	case GAME_STATE_SELECT_PLAYERS:
-		match_set_status(match, "");
+		match->state = GAME_STATE_WELCOME; 
 		break;
 
 	case GAME_STATE_SELECT_GAME:
-	case GAME_STATE_GAME_ON:
-		match_set_status(match, "Game on!");
-	}
+		match->state = GAME_STATE_SELECT_PLAYERS;
+		break;
 
-	match->state = state;
+	case GAME_STATE_GAME_ON:
+		match->state = GAME_STATE_SELECT_GAME;
+		break;
+
+	default:
+		match->state = GAME_STATE_SELECT_PLAYERS;
+		break;
+
+	}
+}
+
+
+void match_next_state(Match *match)
+{
+	switch(match->state) {
+	case GAME_STATE_WELCOME:
+		match->state = GAME_STATE_SELECT_PLAYERS; 
+		break;
+
+	case GAME_STATE_SELECT_PLAYERS:
+		match->state = GAME_STATE_SELECT_GAME; 
+		break;
+
+	case GAME_STATE_SELECT_GAME:
+		match->state = GAME_STATE_GAME_ON;
+		break;
+
+	case GAME_STATE_GAME_ON:
+		match->state = GAME_STATE_SELECT_PLAYERS;
+		break;
+
+	default:
+		match->state = GAME_STATE_GAME_ON;
+		break;
+
+	}
 }
 
 void match_add_player(Match *match, const char *player_name)
@@ -57,4 +95,11 @@ void match_remove_player(Match *match)
 	if (match->player_count > 1) {
 		match->player_count -= 1;
 	}
+}
+
+
+void match_set_available_game_modes(Match *match, Game_Mode *modes, size_t modes_count)
+{
+	match->available_game_modes.game_modes       = modes;
+	match->available_game_modes.game_modes_count = modes_count;
 }

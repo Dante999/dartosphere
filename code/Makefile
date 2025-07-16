@@ -11,6 +11,7 @@ all:
 		screen_game_on.c \
 		screen_welcome.c \
 		screen_player_selection.c \
+		screen_game_selection.c \
 		darts.c \
 		${LIBS} \
 		${LD_FLAGS}

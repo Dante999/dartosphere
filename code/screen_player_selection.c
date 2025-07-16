@@ -53,19 +53,16 @@ static void screen_show_header(Screen *screen, Match *match)
 	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_L, "Select Players");
 }
 
+
+#define WIDTH_OPTION_NAME  180
+#define WIDTH_OPTION_VALUE  50
+#define LINE_INDEX_PLAYER_AMOUNT 0
+
 static void screen_show_player_amount_box(Screen *screen, Match *match)
 {
-	int x = SCREEN_BORDER_WIDTH;
-	const int y = Y_OFFSET_PLAYER_COUNT;
+	bool is_selected = (g_selection_index == LINE_INDEX_PLAYER_AMOUNT);
 
-	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_L, "Players: ");
-	x += 180;
-
-	SDL_Rect outlineRect = {x+TEXT_OFFSET, y+TEXT_OFFSET, BOX_PLAYER_COUNT_WIDTH, BOX_PLAYER_COUNT_HEIGHT}; // x, y, width, height
-	if (g_selection_index == 0) {
-		screen_set_color(screen, SCREEN_COLOR_GREY);;
-		SDL_RenderFillRect(screen->renderer, &outlineRect);
-
+	if (is_selected) {
 		if (match->key == DKEY_6) {
 			char player_name[255];
 			snprintf(player_name, sizeof(player_name), "Player %zu", match->player_count+1);
@@ -76,9 +73,8 @@ static void screen_show_player_amount_box(Screen *screen, Match *match)
 		}
 	}
 
-	screen_set_color(screen, SCREEN_COLOR_BLACK);;
-	SDL_RenderDrawRect(screen->renderer, &outlineRect);
-	screen_draw_text(screen, x, y, TEXT_FONT_SIZE, "%d", match->player_count);
+	screen_draw_option(screen, WIDTH_OPTION_NAME, WIDTH_OPTION_VALUE, LINE_INDEX_PLAYER_AMOUNT, is_selected, "Player", "%zu", match->player_count);
+
 }
 
 static void screen_show_players(Screen *screen, Match *match)
@@ -126,6 +122,11 @@ void screen_player_selection(Screen *screen, Match *match)
 		g_selection_index = 0;
 	}
 
+	if (match->key == DKEY_MINUS) {
+		g_selection_index = 0;
+		match_previous_state(match);
+	}
+
 	if (g_cursor_state == CURSOR_MOVING) {
 		if (match->key == DKEY_8)
 			decrease_index(match);
@@ -133,7 +134,7 @@ void screen_player_selection(Screen *screen, Match *match)
 			increase_index(match);
 
 		if (match->key == DKEY_ENTER && g_selection_index == (int)(match->player_count+1)) {
-			match_set_state(match, GAME_STATE_SELECT_GAME);
+			match_next_state(match);
 		}
 	}
 

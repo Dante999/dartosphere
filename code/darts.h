@@ -22,16 +22,16 @@ typedef enum {
 	DARTS_SINGLE,
 	DARTS_DOUBLE,
 	DARTS_TRIPPLE
-} Multiplicator;
+} Field_Type;
 
-char multiplicator_as_char(Multiplicator m);
+char field_type_as_char(Field_Type type);
 
 
 
 typedef struct {
-	Multiplicator multiplicator;
-	int16_t score;
-	bool is_active;
+	Field_Type field_type;
+	int16_t    field_value;
+	bool       is_active;
 } Dart;
 
 typedef struct {
@@ -39,11 +39,6 @@ typedef struct {
 } Turn;
 
 
-typedef struct {
-	char name[255];
-	char modifiers[255];
-	void *data;
-} Game_Mode;
 
 
 typedef enum {
@@ -56,6 +51,10 @@ typedef enum {
 typedef enum {
 	DKEY_NONE,
 	DKEY_ENTER,
+	DKEY_MULTIPLY,
+	DKEY_DIVIDE,
+	DKEY_MINUS,
+	DKEY_PLUS,
 	DKEY_0,
 	DKEY_1,
 	DKEY_2,
@@ -69,20 +68,36 @@ typedef enum {
 } Game_Keypress;
 
 typedef struct {
-	Game_Keypress key;
-	Game_State state;
+	char name[255];
+	char description[255];
+} Game_Mode;
+
+typedef struct {
+	Game_Mode *game_modes;
+	size_t     game_modes_count;
+} Available_Game_Modes;
+
+
+
+
+typedef struct {
 	char status_text[255];
-	Game_Mode  game;
-	Turn   player_turn;
+	Game_Keypress         key;
+	Game_State            state;
+	Game_Mode            *game_mode;
+	Available_Game_Modes available_game_modes;
+	Turn          player_turn;
 	Player players[MAX_PLAYER_COUNT];
 	size_t player_count;
 	size_t legs_for_win;
 	size_t round;
 } Match;
 
-void match_set_state(Match *match, Game_State state);
+void match_init(Match *match);
+void match_previous_state(Match *match);
+void match_next_state(Match *match);
 void match_add_player(Match *match, const char *name);
 void match_remove_player(Match *match);
-
+void match_set_available_game_modes(Match *match, Game_Mode *modes, size_t modes_count);
 
 #endif // DARTS_H

@@ -3,6 +3,7 @@
 #include "screen_game_on.h"
 #include "screen_welcome.h"
 #include "screen_player_selection.h"
+#include "screen_game_selection.h"
 
 #include <unistd.h>
 
@@ -116,21 +117,28 @@ static void screen_show_status(Screen *screen, Match *match)
 	screen_draw_text(screen, x+5, y+5, SCREEN_FONT_SIZE_L, match->status_text);
 }
 
+
+
+
 static void screen_handle_keypress(SDL_Keysym *key, Match *match)
 {
 	switch(key->sym) {
 
-	case SDLK_KP_ENTER: match->key = DKEY_ENTER; break;
-	case SDLK_KP_0    : match->key = DKEY_0; break;
-	case SDLK_KP_1    : match->key = DKEY_1; break;
-	case SDLK_KP_2    : match->key = DKEY_2; break;
-	case SDLK_KP_3    : match->key = DKEY_3; break;
-	case SDLK_KP_4    : match->key = DKEY_4; break;
-	case SDLK_KP_5    : match->key = DKEY_5; break;
-	case SDLK_KP_6    : match->key = DKEY_6; break;
-	case SDLK_KP_7    : match->key = DKEY_7; break;
-	case SDLK_KP_8    : match->key = DKEY_8; break;
-	case SDLK_KP_9    : match->key = DKEY_9; break;
+	case SDLK_KP_ENTER    : match->key = DKEY_ENTER;    break;
+	case SDLK_KP_PLUS     : match->key = DKEY_PLUS;     break;
+	case SDLK_KP_MINUS    : match->key = DKEY_MINUS;    break;
+	case SDLK_KP_DIVIDE   : match->key = DKEY_DIVIDE;   break;
+	case SDLK_KP_MULTIPLY : match->key = DKEY_MULTIPLY; break;
+	case SDLK_KP_0        : match->key = DKEY_0;        break;
+	case SDLK_KP_1        : match->key = DKEY_1;        break;
+	case SDLK_KP_2        : match->key = DKEY_2;        break;
+	case SDLK_KP_3        : match->key = DKEY_3;        break;
+	case SDLK_KP_4        : match->key = DKEY_4;        break;
+	case SDLK_KP_5        : match->key = DKEY_5;        break;
+	case SDLK_KP_6        : match->key = DKEY_6;        break;
+	case SDLK_KP_7        : match->key = DKEY_7;        break;
+	case SDLK_KP_8        : match->key = DKEY_8;        break;
+	case SDLK_KP_9        : match->key = DKEY_9;        break;
 
 	}
 }
@@ -141,8 +149,6 @@ static void screen_handle_states(Screen *screen, Match *match)
 
 	case GAME_STATE_WELCOME:
 		screen_welcome(screen, match);
-
-		if (match->key == DKEY_ENTER) match_set_state(match, GAME_STATE_SELECT_PLAYERS);
 		break;
 
 	case GAME_STATE_SELECT_PLAYERS:
@@ -150,16 +156,72 @@ static void screen_handle_states(Screen *screen, Match *match)
 		break;
 
 	case GAME_STATE_SELECT_GAME:
+		screen_game_selection(screen, match);
+		break;
+
 	case GAME_STATE_GAME_ON:
 		screen_game_on(screen, match);
-
-		if (match->key == DKEY_ENTER) match_set_state(match, GAME_STATE_WELCOME);
 		break;
 	}
 
 	screen_show_status(screen, match);
 }
 
+
+#define Y_OFFSET_CHOOSER 120
+#define CHOOSER_HEIGHT   50
+#define CHOOSER_INT_WIDTH 50
+void screen_draw_option(
+	Screen *screen,
+	int name_width,
+	int value_width,
+	int y_index, 
+	bool is_selected,
+	const char *name,
+	const char *fmt_value, ...)
+{
+	int x = SCREEN_BORDER_WIDTH;
+	int y = Y_OFFSET_CHOOSER + (y_index * 55);
+
+	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_L, "%s", name);
+	x += name_width;
+
+	SDL_Rect outlineRect = {x-5, y-5, value_width, CHOOSER_HEIGHT}; // x, y, width, height
+	if (is_selected) {
+		screen_set_color(screen, SCREEN_COLOR_GREY);;
+		SDL_RenderFillRect(screen->renderer, &outlineRect);
+	}
+
+	screen_set_color(screen, SCREEN_COLOR_BLACK);;
+	SDL_RenderDrawRect(screen->renderer, &outlineRect);
+	
+	char buffer[1024];
+
+	va_list arg_list;
+	va_start(arg_list, fmt_value);
+	vsnprintf(buffer, sizeof(buffer), fmt_value, arg_list);
+	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_L, "%s", buffer);
+
+}
+
+void screen_draw_int_chooser(Screen *screen, int x_offset, int y_index, String_Chooser *chooser, bool is_selected)
+{
+	int x = SCREEN_BORDER_WIDTH;
+	int y = Y_OFFSET_CHOOSER + (y_index * 50);
+
+	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_L, "%s", chooser->name);
+	x += x_offset;
+
+	SDL_Rect outlineRect = {x+5, y+5, CHOOSER_INT_WIDTH, CHOOSER_HEIGHT}; // x, y, width, height
+	if (is_selected) {
+		screen_set_color(screen, SCREEN_COLOR_GREY);;
+		SDL_RenderFillRect(screen->renderer, &outlineRect);
+	}
+
+	screen_set_color(screen, SCREEN_COLOR_BLACK);;
+	SDL_RenderDrawRect(screen->renderer, &outlineRect);
+	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_L, "%d", chooser->values[chooser->selected]);
+}
 
 Result screen_init(Screen *screen, int width, int height)
 {
