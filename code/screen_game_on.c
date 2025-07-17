@@ -11,22 +11,6 @@
 #define TURN_BOX_WIDTH   100
 #define TURN_BOX_HEIGHT  50
 
-static void screen_show_header(Screen *screen, Match *match)
-{
-	const int x = SCREEN_BORDER_WIDTH;
-	int       y = Y_OFFSET_HEADER;
-
-
-	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_L, "Game: %s", match->game_mode->name);
-	y+= SCREEN_FONT_SIZE_L+5;
-
-	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_S, ""/*match->game.modifiers*/);
-	y+= SCREEN_FONT_SIZE_S+5;
-
-	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_M, "Round: %03zu   Legs for win: %zu", match->round, match->legs_for_win);
-
-
-}
 
 
 static void screen_show_players(Screen *screen, Match *match)

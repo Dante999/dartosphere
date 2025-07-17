@@ -1,5 +1,8 @@
 #include "screen_player_selection.h"
 
+
+#include "screen_utils.h"
+
 #include "libcutils/logger.h"
 
 #define Y_OFFSET_HEADER     SCREEN_BORDER_WIDTH
@@ -14,73 +17,59 @@
 #define BOX_PLAYER_NAME_HEIGHT    50
 #define BOX_PLAYER_NAME_WIDTH     400
 
-#define FONT_SIZE_CONTINUE_BUTTON  SCREEN_FONT_SIZE_M
-#define BOX_CONTINUE_BUTTON_HEIGHT     30
-#define BOX_CONTINUE_BUTTON_WIDTH      130
 
 #define X_OFFSET_INPUT_FIELDS  50
+
+#define WIDTH_OPTION_NAME  180
+#define WIDTH_OPTION_VALUE  50
+#define LINE_INDEX_PLAYER_AMOUNT 0
 
 typedef enum {
 	CURSOR_MOVING,
 	CURSOR_EDITING
 } Cursor_State;
 
-static int g_selection_index = 0;
-static int g_cursor_state    = CURSOR_MOVING;
+static Line_Cursor g_line_cursor = {
+	.index = 0,
+	.max_index = 0,
+	.cycle = true
+};
 
-static void increase_index(Match *match)
+static int g_cursor_state = CURSOR_MOVING;
+
+void update_max_line_index(Match *match)
 {
-	if (g_selection_index < (int)match->player_count+1) {
-		g_selection_index++;
-	}
+	g_line_cursor.max_index = match->player_list.count + LINE_INDEX_PLAYER_AMOUNT;
 }
 
-static void decrease_index(Match *match)
-{
-	(void) match;
-
-	if (g_selection_index > 0) {
-		g_selection_index--;
-	}
-}
-
-static void screen_show_header(Screen *screen, Match *match)
-{
-	(void) match;
-	const int x = SCREEN_BORDER_WIDTH;
-	int       y = Y_OFFSET_HEADER;
-
-	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_L, "Select Players");
-}
-
-
-#define WIDTH_OPTION_NAME  180
-#define WIDTH_OPTION_VALUE  50
-#define LINE_INDEX_PLAYER_AMOUNT 0
 
 static void screen_show_player_amount_box(Screen *screen, Match *match)
 {
-	bool is_selected = (g_selection_index == LINE_INDEX_PLAYER_AMOUNT);
+	bool is_selected = (g_line_cursor.index == LINE_INDEX_PLAYER_AMOUNT);
 
 	if (is_selected) {
-		if (match->key == DKEY_6) {
+		if (screen->key_pressed == DKEY_6) {
 			char player_name[255];
-			snprintf(player_name, sizeof(player_name), "Player %zu", match->player_count+1);
+			snprintf(player_name, sizeof(player_name), "Player %zu", match->player_list.count+1);
 			match_add_player(match, player_name);
 		}
-		else if (match->key == DKEY_4) {
+		else if (screen->key_pressed == DKEY_4) {
 			match_remove_player(match);
 		}
+
+		update_max_line_index(match);
 	}
 
-	screen_draw_option(screen, WIDTH_OPTION_NAME, WIDTH_OPTION_VALUE, LINE_INDEX_PLAYER_AMOUNT, is_selected, "Player", "%zu", match->player_count);
+	screen_draw_option(screen, WIDTH_OPTION_NAME, WIDTH_OPTION_VALUE,
+		LINE_INDEX_PLAYER_AMOUNT, is_selected,
+		"Player", "%zu", match->player_list.count);
 
 }
 
 static void screen_show_players(Screen *screen, Match *match)
 {
-	for (size_t i=0; i < match->player_count; ++i) {
-		Player *player = &match->players[i];
+	for (size_t i=0; i < match->player_list.count; ++i) {
+		Player *player = &match->player_list.items[i];
 
 		//const int x = (1+i)*SCREEN_BORDER_WIDTH + (i*PLAYER_BOX_SIZE);
 		const int x = SCREEN_BORDER_WIDTH;
@@ -88,7 +77,7 @@ static void screen_show_players(Screen *screen, Match *match)
 
 		SDL_Rect outlineRect = {x+TEXT_OFFSET, y+TEXT_OFFSET, BOX_PLAYER_NAME_WIDTH, BOX_PLAYER_NAME_HEIGHT}; // x, y, width, height
 
-		if (g_selection_index == (int)(i+1)) {
+		if (g_line_cursor.index == (int)(i+LINE_INDEX_PLAYER_AMOUNT+1)) {
 			screen_set_color(screen, SCREEN_COLOR_GREY);;
 			SDL_RenderFillRect(screen->renderer, &outlineRect);
 		}
@@ -99,28 +88,16 @@ static void screen_show_players(Screen *screen, Match *match)
 	}
 }
 
-static void screen_show_continue_button(Screen *screen, Match *match)
-{
-	const int x = SCREEN_BORDER_WIDTH;
-	const int y = Y_OFFSET_CONTINUE_BUTTON;
-
-	SDL_Rect outlineRect = {x+TEXT_OFFSET, y+TEXT_OFFSET, BOX_CONTINUE_BUTTON_WIDTH, BOX_CONTINUE_BUTTON_HEIGHT}; // x, y, width, height
-
-	if (g_selection_index == (int)(match->player_count+1)) {
-		screen_set_color(screen, SCREEN_COLOR_GREY);;
-		SDL_RenderFillRect(screen->renderer, &outlineRect);
-	}
-	screen_set_color(screen, SCREEN_COLOR_BLACK);
-	SDL_RenderDrawRect(screen->renderer, &outlineRect);
-
-	screen_draw_text(screen, x, y,  FONT_SIZE_CONTINUE_BUTTON,  "continue");
-}
 
 void screen_player_selection_on_enter(Screen *screen, Match *match)
 {
 	(void) screen;
 	(void) match;
-	g_selection_index = 0;
+	g_line_cursor.index = 0;
+	update_max_line_index(match);
+
+	screen_set_header(screen, "Select Players", "", "");
+	screen_set_status(screen, "Press <ENTER> to continue");
 }
 void screen_player_selection_on_exit(Screen *screen, Match *match)
 {
@@ -130,24 +107,22 @@ void screen_player_selection_on_exit(Screen *screen, Match *match)
 
 void screen_player_selection_refresh(Screen *screen, Match *match)
 {
-	if (match->key == DKEY_MINUS) {
+	if (screen->key_pressed == DKEY_MINUS) {
 		screen_previous(screen, match);
 	}
 
 	if (g_cursor_state == CURSOR_MOVING) {
-		if (match->key == DKEY_8)
-			decrease_index(match);
-		else if (match->key == DKEY_2)
-			increase_index(match);
+		if (screen->key_pressed == DKEY_8)
+			line_cursor_up(&g_line_cursor);
+		else if (screen->key_pressed == DKEY_2)
+			line_cursor_down(&g_line_cursor);
 
-		if (match->key == DKEY_ENTER && g_selection_index == (int)(match->player_count+1)) {
+		if (screen->key_pressed == DKEY_ENTER) {
 			screen_next(screen, match);
 		}
 	}
 
-	screen_show_header(screen, match);
 	screen_show_player_amount_box(screen, match);
 	screen_show_players(screen, match);
-	screen_show_continue_button(screen, match);
 }
 

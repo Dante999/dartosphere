@@ -133,8 +133,10 @@ void screen_draw_text(Screen *screen, int x, int y, int font_size, const char *f
 	SDL_DestroyTexture(texture);
 }
 
-static void screen_show_status(Screen *screen, Match *match)
+static void screen_draw_status(Screen *screen, Match *match)
 {
+	(void) match;
+
 	const int x = SCREEN_BORDER_WIDTH;
 	const int y = Y_OFFSET_STATUS_MSG;
 
@@ -142,31 +144,46 @@ static void screen_show_status(Screen *screen, Match *match)
 
 	SDL_Rect outlineRect = {x, y, STATUS_BOX_WIDTH, STATUS_BOX_HEIGHT}; // x, y, width, height
 	SDL_RenderDrawRect(screen->renderer, &outlineRect);
-	screen_draw_text(screen, x+5, y+5, SCREEN_FONT_SIZE_L, match->status_text);
+	screen_draw_text(screen, x+5, y+5, SCREEN_FONT_SIZE_L, screen->header_footer.status_text);
+}
+
+static void screen_draw_header(Screen *screen, Match *match)
+{
+	(void) match;
+
+	const int x = SCREEN_BORDER_WIDTH;
+	int       y = SCREEN_BORDER_WIDTH;;
+
+
+	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_L, screen->header_footer.header_first);
+	y+= SCREEN_FONT_SIZE_L+5;
+
+	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_S, screen->header_footer.header_second);
+	y+= SCREEN_FONT_SIZE_S+5;
+
+	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_M, screen->header_footer.header_third);
 }
 
 
-
-
-static void screen_handle_keypress(SDL_Keysym *key, Match *match)
+static void screen_handle_keypress(Screen *screen, SDL_Keysym *key)
 {
 	switch(key->sym) {
 
-	case SDLK_KP_ENTER    : match->key = DKEY_ENTER;    break;
-	case SDLK_KP_PLUS     : match->key = DKEY_PLUS;     break;
-	case SDLK_KP_MINUS    : match->key = DKEY_MINUS;    break;
-	case SDLK_KP_DIVIDE   : match->key = DKEY_DIVIDE;   break;
-	case SDLK_KP_MULTIPLY : match->key = DKEY_MULTIPLY; break;
-	case SDLK_KP_0        : match->key = DKEY_0;        break;
-	case SDLK_KP_1        : match->key = DKEY_1;        break;
-	case SDLK_KP_2        : match->key = DKEY_2;        break;
-	case SDLK_KP_3        : match->key = DKEY_3;        break;
-	case SDLK_KP_4        : match->key = DKEY_4;        break;
-	case SDLK_KP_5        : match->key = DKEY_5;        break;
-	case SDLK_KP_6        : match->key = DKEY_6;        break;
-	case SDLK_KP_7        : match->key = DKEY_7;        break;
-	case SDLK_KP_8        : match->key = DKEY_8;        break;
-	case SDLK_KP_9        : match->key = DKEY_9;        break;
+	case SDLK_KP_ENTER    : screen->key_pressed = DKEY_ENTER;    break;
+	case SDLK_KP_PLUS     : screen->key_pressed = DKEY_PLUS;     break;
+	case SDLK_KP_MINUS    : screen->key_pressed = DKEY_MINUS;    break;
+	case SDLK_KP_DIVIDE   : screen->key_pressed = DKEY_DIVIDE;   break;
+	case SDLK_KP_MULTIPLY : screen->key_pressed = DKEY_MULTIPLY; break;
+	case SDLK_KP_0        : screen->key_pressed = DKEY_0;        break;
+	case SDLK_KP_1        : screen->key_pressed = DKEY_1;        break;
+	case SDLK_KP_2        : screen->key_pressed = DKEY_2;        break;
+	case SDLK_KP_3        : screen->key_pressed = DKEY_3;        break;
+	case SDLK_KP_4        : screen->key_pressed = DKEY_4;        break;
+	case SDLK_KP_5        : screen->key_pressed = DKEY_5;        break;
+	case SDLK_KP_6        : screen->key_pressed = DKEY_6;        break;
+	case SDLK_KP_7        : screen->key_pressed = DKEY_7;        break;
+	case SDLK_KP_8        : screen->key_pressed = DKEY_8;        break;
+	case SDLK_KP_9        : screen->key_pressed = DKEY_9;        break;
 
 	}
 }
@@ -203,7 +220,9 @@ void screen_next(Screen *screen, Match *match)
 static void screen_handle_states(Screen *screen, Match *match)
 {
 	get_current_screen(screen)->refresh(screen, match);
-	screen_show_status(screen, match);
+
+	screen_draw_header(screen, match);
+	screen_draw_status(screen, match);
 }
 
 
@@ -262,7 +281,7 @@ void screen_draw_int_chooser(Screen *screen, int x_offset, int y_index, String_C
 	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_L, "%d", chooser->values[chooser->selected]);
 }
 
-Result screen_init(Screen *screen, int width, int height)
+Result screen_init(Screen *screen, Match *match, int width, int height)
 {
 	if(SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
@@ -313,6 +332,7 @@ Result screen_init(Screen *screen, int width, int height)
 	screen->current_screen     = GAME_SCREEN_WELCOME;
 	screen->game_screens       = g_game_screens;
 	screen->game_screens_count = ARRAY_SIZE(g_game_screens);
+	get_current_screen(screen)->on_enter(screen, match);
 	return result_make(true, "");
 }
 
@@ -330,7 +350,7 @@ bool screen_refresh(Screen *screen, Match *match)
 
 	SDL_Event event;
 
-	match->key = DKEY_NONE;
+	screen->key_pressed = DKEY_NONE;
 
 	while (SDL_PollEvent(&event)) {
 
@@ -340,7 +360,7 @@ bool screen_refresh(Screen *screen, Match *match)
 			quit = true;
 			break;
 		case SDL_KEYDOWN:
-			screen_handle_keypress(&event.key.keysym, match);
+			screen_handle_keypress(screen, &event.key.keysym);
 			break;
 		}
 	}
@@ -364,4 +384,16 @@ bool screen_refresh(Screen *screen, Match *match)
 	SDL_Delay(10);
 
 	return quit;
+}
+
+void screen_set_header(Screen *screen, const char *first_line, const char *second_line, const char *third_line)
+{
+	strncpy(screen->header_footer.header_first, first_line, sizeof(screen->header_footer.header_first));
+	strncpy(screen->header_footer.header_second, second_line, sizeof(screen->header_footer.header_second));
+	strncpy(screen->header_footer.header_third, third_line, sizeof(screen->header_footer.header_third));
+}
+
+void screen_set_status(Screen *screen, const char *status)
+{
+	strncpy(screen->header_footer.status_text, status, sizeof(screen->header_footer.status_text));
 }

@@ -42,15 +42,40 @@ typedef struct {
 	Game_Screen_Id previous_screen;
 } Game_Screen;
 
+typedef enum {
+	DKEY_NONE,
+	DKEY_ENTER,
+	DKEY_MULTIPLY,
+	DKEY_DIVIDE,
+	DKEY_MINUS,
+	DKEY_PLUS,
+	DKEY_0,
+	DKEY_1,
+	DKEY_2,
+	DKEY_3,
+	DKEY_4,
+	DKEY_5,
+	DKEY_6,
+	DKEY_7,
+	DKEY_8,
+	DKEY_9
+} Game_Keypress;
 
 struct screen {
-	SDL_Window   *window;
-	SDL_Renderer *renderer;
-	TTF_Font     *font;
+	SDL_Window     *window;
+	SDL_Renderer   *renderer;
+	TTF_Font       *font;
+	struct {
+		char header_first[255];
+		char header_second[255];
+		char header_third[255];
+		char status_text[255];
+	} header_footer;
 	Game_Screen    *game_screens;
 	size_t          game_screens_count;
 	Game_Screen_Id  current_screen;
-}; 
+	Game_Keypress   key_pressed;
+};
 
 
 typedef enum {
@@ -69,7 +94,7 @@ typedef struct {
 
 
 
-Result screen_init(Screen *screen, int width, int height);
+Result screen_init(Screen *screen, Match *match, int width, int height);
 void   screen_set_color(Screen *screen, Screen_Color color);
 void   screen_draw_text(Screen *screen, int x, int y, int font_size, const char *fmt, ...);
 
@@ -77,6 +102,9 @@ void   screen_draw_text(Screen *screen, int x, int y, int font_size, const char 
 
 void screen_previous(Screen *screen, Match *match);
 void screen_next(Screen *screen, Match *match);
+void screen_set_header(Screen *screen, const char *first_line, const char *second_line, const char *third_line);
+void screen_set_status(Screen *screen, const char *msg);
+
 
 void screen_draw_option(
 	Screen *screen,

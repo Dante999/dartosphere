@@ -3,8 +3,10 @@
 
 void screen_welcome_on_enter(Screen *screen, Match *match)
 {
-	(void) screen;
 	(void) match;
+
+	screen_set_header(screen, "Welcome to Dartosphere!", "", "");
+	screen_set_status(screen, "Press <ENTER> to continue!");
 }
 
 
@@ -17,13 +19,5 @@ void screen_welcome_on_exit(Screen *screen, Match *match)
 
 void screen_welcome_refresh(Screen *screen, Match *match)
 {
-	(void) match;
-
-	const int x = SCREEN_BORDER_WIDTH;
-	const int y = SCREEN_BORDER_WIDTH;
-
-	screen_set_color(screen, SCREEN_COLOR_BLACK);
-	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_XL, "Welcome to Dartosphere!");
-
-	if (match->key == DKEY_ENTER) screen_next(screen, match);
+	if (screen->key_pressed == DKEY_ENTER) screen_next(screen, match);
 }
