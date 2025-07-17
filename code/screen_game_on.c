@@ -96,7 +96,7 @@ void screen_game_on(Screen *screen, Match *match)
 	screen_show_players(screen, match);
 	screen_show_turn(screen, match);
 
-	if (match->key == DKEY_ENTER) match_next_state(match);
+	if (match->key == DKEY_ENTER) screen_next(screen, match);
 }
 
 

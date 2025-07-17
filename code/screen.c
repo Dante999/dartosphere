@@ -6,6 +6,7 @@
 #include "screen_game_selection.h"
 
 #include <unistd.h>
+#include <assert.h>
 
 #include <SDL.h>
 #include <SDL_video.h>
@@ -13,6 +14,7 @@
 #include <SDL_keycode.h>
 
 #include "libcutils/logger.h"
+#include "libcutils/util_makros.h"
 
 static SDL_Color g_color_black  = {0, 0 , 0, 255};
 //static SDL_Color     screen->font_bg  = {255, 255, 255, 255};
@@ -29,6 +31,32 @@ static SDL_Color g_color_black  = {0, 0 , 0, 255};
 #define STATUS_BOX_HEIGHT   50
 #define Y_OFFSET_STATUS_MSG (SCREEN_LOGICAL_HEIGHT-SCREEN_BORDER_WIDTH-STATUS_BOX_HEIGHT)
 
+static Game_Screen g_game_screens[] = {
+	{
+		.id              = GAME_SCREEN_WELCOME,
+		.on_enter        = screen_welcome_on_enter,
+		.refresh         = screen_welcome_refresh,
+		.on_exit         = screen_welcome_on_exit,
+		.next_screen     = GAME_SCREEN_SELECT_PLAYERS,
+		.previous_screen = GAME_SCREEN_WELCOME
+	},
+	{
+		.id              = GAME_SCREEN_SELECT_PLAYERS,
+		.on_enter        = screen_player_selection_on_enter,
+		.refresh         = screen_player_selection_refresh,
+		.on_exit         = screen_player_selection_on_exit,
+		.next_screen     = GAME_SCREEN_SELECT_GAME,
+		.previous_screen = GAME_SCREEN_WELCOME
+	},
+	{
+		.id              = GAME_SCREEN_SELECT_GAME,
+		.on_enter        = screen_game_selection_on_enter,
+		.refresh         = screen_game_selection_refresh,
+		.on_exit         = screen_game_selection_on_exit,
+		.next_screen     = GAME_SCREEN_WELCOME,
+		.previous_screen = GAME_SCREEN_SELECT_PLAYERS
+	}
+};
 
 
 void screen_set_color(Screen *screen, Screen_Color color)
@@ -143,27 +171,38 @@ static void screen_handle_keypress(SDL_Keysym *key, Match *match)
 	}
 }
 
-static void screen_handle_states(Screen *screen, Match *match)
+
+static Game_Screen *get_current_screen(Screen *screen)
 {
-	switch (match->state) {
+	for (size_t i=0; i < screen->game_screens_count; ++i) {
+		Game_Screen *ptr = &screen->game_screens[i];
 
-	case GAME_STATE_WELCOME:
-		screen_welcome(screen, match);
-		break;
-
-	case GAME_STATE_SELECT_PLAYERS:
-		screen_player_selection(screen, match);
-		break;
-
-	case GAME_STATE_SELECT_GAME:
-		screen_game_selection(screen, match);
-		break;
-
-	case GAME_STATE_GAME_ON:
-		screen_game_on(screen, match);
-		break;
+		if (ptr->id == screen->current_screen) {
+			return ptr;
+		}
 	}
 
+	assert(false && "no current screen found!");
+}
+
+void screen_previous(Screen *screen, Match *match)
+{
+	get_current_screen(screen)->on_exit(screen, match);
+	screen->current_screen = get_current_screen(screen)->previous_screen;
+	get_current_screen(screen)->on_enter(screen, match);
+
+}
+
+void screen_next(Screen *screen, Match *match)
+{
+	get_current_screen(screen)->on_exit(screen, match);
+	screen->current_screen = get_current_screen(screen)->next_screen;
+	get_current_screen(screen)->on_enter(screen, match);
+}
+
+static void screen_handle_states(Screen *screen, Match *match)
+{
+	get_current_screen(screen)->refresh(screen, match);
 	screen_show_status(screen, match);
 }
 
@@ -175,7 +214,7 @@ void screen_draw_option(
 	Screen *screen,
 	int name_width,
 	int value_width,
-	int y_index, 
+	int y_index,
 	bool is_selected,
 	const char *name,
 	const char *fmt_value, ...)
@@ -194,7 +233,7 @@ void screen_draw_option(
 
 	screen_set_color(screen, SCREEN_COLOR_BLACK);;
 	SDL_RenderDrawRect(screen->renderer, &outlineRect);
-	
+
 	char buffer[1024];
 
 	va_list arg_list;
@@ -261,7 +300,7 @@ Result screen_init(Screen *screen, int width, int height)
 		return result_make(false, "Renderer could not be created!\n"
 				"SDL_Error: %s\n", SDL_GetError());
 	}
-	
+
 	SDL_RenderSetLogicalSize(screen->renderer, SCREEN_LOGICAL_WIDTH, SCREEN_LOGICAL_HEIGHT);
 
 
@@ -271,6 +310,9 @@ Result screen_init(Screen *screen, int width, int height)
 		return r;
 	}
 
+	screen->current_screen     = GAME_SCREEN_WELCOME;
+	screen->game_screens       = g_game_screens;
+	screen->game_screens_count = ARRAY_SIZE(g_game_screens);
 	return result_make(true, "");
 }
 

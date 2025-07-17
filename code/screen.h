@@ -22,11 +22,35 @@
 #define MAX_OPTION_VALUE_COUNT  5
 #define MAX_OPTION_VALUE_LEN    255
 
+
+typedef struct screen Screen; // forward declaration
+
+
+typedef enum {
+	GAME_SCREEN_WELCOME,
+	GAME_SCREEN_SELECT_PLAYERS,
+	GAME_SCREEN_SELECT_GAME,
+	GAME_SCREEN_GAME_ON
+} Game_Screen_Id;
+
 typedef struct {
+	Game_Screen_Id id;
+	void (*on_enter)(Screen *screen, Match *match);
+	void (*refresh)(Screen *screen, Match *match);
+	void (*on_exit)(Screen *screen, Match *match);
+	Game_Screen_Id next_screen;
+	Game_Screen_Id previous_screen;
+} Game_Screen;
+
+
+struct screen {
 	SDL_Window   *window;
 	SDL_Renderer *renderer;
 	TTF_Font     *font;
-} Screen;
+	Game_Screen    *game_screens;
+	size_t          game_screens_count;
+	Game_Screen_Id  current_screen;
+}; 
 
 
 typedef enum {
@@ -41,23 +65,24 @@ typedef struct {
 	int selected;
 } String_Chooser;
 
-typedef struct {
-	char name[255];
-	int value;
-	int min_value;
-	int max_value;
-} Int_Chooser;
+
+
 
 
 Result screen_init(Screen *screen, int width, int height);
 void   screen_set_color(Screen *screen, Screen_Color color);
 void   screen_draw_text(Screen *screen, int x, int y, int font_size, const char *fmt, ...);
 
+
+
+void screen_previous(Screen *screen, Match *match);
+void screen_next(Screen *screen, Match *match);
+
 void screen_draw_option(
 	Screen *screen,
 	int name_width,
 	int value_width,
-	int y_index, 
+	int y_index,
 	bool is_selected,
 	const char *name,
 	const char *fmt_value, ...);

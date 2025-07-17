@@ -116,15 +116,22 @@ static void screen_show_continue_button(Screen *screen, Match *match)
 	screen_draw_text(screen, x, y,  FONT_SIZE_CONTINUE_BUTTON,  "continue");
 }
 
-void screen_player_selection(Screen *screen, Match *match)
+void screen_player_selection_on_enter(Screen *screen, Match *match)
 {
-	if (g_selection_index >  (int)match->player_count+1) {
-		g_selection_index = 0;
-	}
+	(void) screen;
+	(void) match;
+	g_selection_index = 0;
+}
+void screen_player_selection_on_exit(Screen *screen, Match *match)
+{
+	(void) screen;
+	(void) match;
+}
 
+void screen_player_selection_refresh(Screen *screen, Match *match)
+{
 	if (match->key == DKEY_MINUS) {
-		g_selection_index = 0;
-		match_previous_state(match);
+		screen_previous(screen, match);
 	}
 
 	if (g_cursor_state == CURSOR_MOVING) {
@@ -134,7 +141,7 @@ void screen_player_selection(Screen *screen, Match *match)
 			increase_index(match);
 
 		if (match->key == DKEY_ENTER && g_selection_index == (int)(match->player_count+1)) {
-			match_next_state(match);
+			screen_next(screen, match);
 		}
 	}
 

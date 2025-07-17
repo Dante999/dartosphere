@@ -1,5 +1,9 @@
 #include "screen_player_selection.h"
 
+#include "screen_utils.h"
+
+
+
 #include "libcutils/logger.h"
 
 #define Y_OFFSET_HEADER     SCREEN_BORDER_WIDTH
@@ -21,37 +25,39 @@
 #define X_OFFSET_INPUT_FIELDS  50
 
 
+
+
 typedef enum {
 	LINE_INDEX_GAME_MODE = 0,
 	LINE_INDEX_LEGS_FOR_WIN,
 	LINE_INDEX_MAX
 } Line_Index;
 
-static int g_line_index = 0;
-static int g_selected_game_index = 0;
+static Line_Cursor g_line_cursor = {
+	.index = 0,
+	.max_index = LINE_INDEX_MAX-1,
+	.cycle = true
+};
+
+static Int_Chooser g_chooser_game_mode = {
+	.name      = "Game",
+	.value     = 0,
+	.min_value = 0,
+	.max_value = 0, // will be set when on_enter()
+	.cycle     = true
+};
+
+static Int_Chooser g_chooser_legs_for_win = {
+	.name      = "Legs for win",
+	.value     = 1,
+	.min_value = 1,
+	.max_value = 10
+};
 
 
 #define WIDTH_OPTION_NAME  300
 #define WIDTH_OPTION_VALUE (SCREEN_LOGICAL_WIDTH-2*SCREEN_BORDER_WIDTH-WIDTH_OPTION_NAME)
 
-static void increase_line_index(Match *match)
-{
-	(void) match;
-
-	if (g_line_index < LINE_INDEX_MAX-1) {
-		g_line_index++;
-	}
-}
-
-static void decrease_line_index(Match *match)
-{
-	log_info("decrease line\n");
-	(void) match;
-
-	if (g_line_index > 0) {
-		g_line_index--;
-	}
-}
 
 static void screen_show_header(Screen *screen, Match *match)
 {
@@ -62,115 +68,83 @@ static void screen_show_header(Screen *screen, Match *match)
 	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_L, "Select Game");
 }
 
-//static void screen_show_available_games(Screen *screen, Match *match)
-//{
-//	int x = SCREEN_BORDER_WIDTH;
-//	const int y = Y_OFFSET_PLAYER_COUNT;
-//
-//	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_L, "Game: ");
-//	x += 180;
-//
-//	SDL_Rect outlineRect = {x+TEXT_OFFSET, y+TEXT_OFFSET, BOX_PLAYER_COUNT_WIDTH, BOX_PLAYER_COUNT_HEIGHT}; // x, y, width, height
-//	if (g_selection_index == 0) {
-//		screen_set_color(screen, SCREEN_COLOR_GREY);;
-//		SDL_RenderFillRect(screen->renderer, &outlineRect);
-//
-//		if (match->key == DKEY_6) {
-//
-//			if (g_selection_index < (int)match->available_game_modes.game_modes_count) {
-//				++g_selection_index;
-//			}
-//		}
-//		else if (match->key == DKEY_4) {
-//			if (g_selection_index > 0) {
-//				--g_selection_index;
-//			}
-//		}
-//	}
-//
-//	screen_set_color(screen, SCREEN_COLOR_BLACK);;
-//	SDL_RenderDrawRect(screen->renderer, &outlineRect);
-//	screen_draw_text(screen, x, y, TEXT_FONT_SIZE, match->available_game_modes.game_modes[g_selection_index].name);
-//}
 
 
 
 static void screen_show_available_games(Screen *screen, Match *match)
 {
-	bool is_selected = (g_line_index == LINE_INDEX_GAME_MODE);
-
-	const int game_index_max = (int)match->available_game_modes.game_modes_count;
+	bool is_selected = (g_line_cursor.index == LINE_INDEX_GAME_MODE);
 
 	if (is_selected) {
 		if (match->key == DKEY_6) {
-
-			if (g_selected_game_index < game_index_max-1) {
-				g_selected_game_index++;
-			}
-			else {
-				g_selected_game_index = 0;
-			}
-
+			int_chooser_increase(&g_chooser_game_mode);
 		}
 		else if (match->key == DKEY_4) {
-
-			if (g_selected_game_index > 0) {
-				g_selected_game_index--;
-			}
-			else {
-				g_selected_game_index = game_index_max-1;
-			}
+			int_chooser_decrease(&g_chooser_game_mode);
 		}
 	}
 
-	screen_draw_option(screen, WIDTH_OPTION_NAME, WIDTH_OPTION_VALUE, LINE_INDEX_GAME_MODE, is_selected, "Game", match->available_game_modes.game_modes[g_selected_game_index].name );
+	screen_draw_option(screen, WIDTH_OPTION_NAME, WIDTH_OPTION_VALUE, 
+		LINE_INDEX_GAME_MODE, is_selected, "Game", 
+		match->available_game_modes.game_modes[g_chooser_game_mode.value].name );
 }
 
 static void screen_show_legs_for_win(Screen *screen, Match *match)
 {
-	bool is_selected = (g_line_index == LINE_INDEX_LEGS_FOR_WIN);
-
-	const size_t legs_max = 10;
+	bool is_selected = (g_line_cursor.index == LINE_INDEX_LEGS_FOR_WIN);
 
 	if (is_selected) {
 		if (match->key == DKEY_6) {
-
-			if (match->legs_for_win < legs_max) {
-				match->legs_for_win++;
-			}
+			int_chooser_increase(&g_chooser_legs_for_win);
 		}
 		else if (match->key == DKEY_4) {
-
-			if (match->legs_for_win > 2) {
-				match->legs_for_win--;
-			}
+			int_chooser_decrease(&g_chooser_legs_for_win);
 		}
 	}
 
-	screen_draw_option(screen, 
-			WIDTH_OPTION_NAME, 
-			WIDTH_OPTION_VALUE, 
+	screen_draw_option(screen,
+			WIDTH_OPTION_NAME,
+			WIDTH_OPTION_VALUE,
 			LINE_INDEX_LEGS_FOR_WIN,
-			is_selected, 
+			is_selected,
 			"Legs for win",
-			"%zu",
-			match->legs_for_win);
+			"%d",
+			g_chooser_legs_for_win.value);
 }
-void screen_game_selection(Screen *screen, Match *match)
+void screen_game_selection_on_enter(Screen *screen, Match *match)
+{
+	(void) screen;
+
+	g_chooser_game_mode.max_value = match->available_game_modes.game_modes_count-1;
+
+	g_line_cursor.index           = 0;
+
+	match_set_status_message(match, "Press <ENTER> to continue");
+}
+
+
+void screen_game_selection_on_exit(Screen *screen, Match *match)
+{
+	(void) screen;
+
+	match->legs_for_win = (size_t)g_chooser_legs_for_win.value;
+	match_set_status_message(match, "");
+}
+
+
+void screen_game_selection_refresh(Screen *screen, Match *match)
 {
 	if (match->key == DKEY_8) {
-		decrease_line_index(match);
+		line_cursor_up(&g_line_cursor);
 	}
 	else if (match->key == DKEY_2) {
-		increase_line_index(match);
+		line_cursor_down(&g_line_cursor);
 	}
 	else if (match->key == DKEY_MINUS) {
-		g_line_index = 0;
-		match_previous_state(match);
+		screen_previous(screen, match);
 	}
 	if (match->key == DKEY_ENTER) {
-		g_line_index = 0;
-		match_next_state(match);
+		screen_next(screen, match);
 	}
 
 	screen_show_header(screen, match);

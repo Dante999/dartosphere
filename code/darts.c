@@ -21,8 +21,6 @@ void match_set_status(Match *match, const char *status)
 
 void match_init(Match *match)
 {
-	match_set_status(match, "Press <ENTER> to continue");
-	match->state = GAME_STATE_WELCOME;
 	match->player_count = 0;
 	match_add_player(match, "Player 1");
 
@@ -31,56 +29,57 @@ void match_init(Match *match)
 }
 
 
-void match_previous_state(Match *match) {
-	switch(match->state) {
-	case GAME_STATE_WELCOME:
-		break;
+//void match_previous_state(Match *match) {
+//	switch(match->state) {
+//	case GAME_STATE_WELCOME:
+//		// there is no previous state
+//		break;
+//
+//	case GAME_STATE_SELECT_PLAYERS:
+//		match->state = GAME_STATE_WELCOME;
+//		break;
+//
+//	case GAME_STATE_SELECT_GAME:
+//		match->state = GAME_STATE_SELECT_PLAYERS;
+//		break;
+//
+//	case GAME_STATE_GAME_ON:
+//		match->state = GAME_STATE_SELECT_GAME;
+//		break;
+//
+//	default:
+//		match->state = GAME_STATE_SELECT_PLAYERS;
+//		break;
+//
+//	}
+//}
 
-	case GAME_STATE_SELECT_PLAYERS:
-		match->state = GAME_STATE_WELCOME; 
-		break;
 
-	case GAME_STATE_SELECT_GAME:
-		match->state = GAME_STATE_SELECT_PLAYERS;
-		break;
-
-	case GAME_STATE_GAME_ON:
-		match->state = GAME_STATE_SELECT_GAME;
-		break;
-
-	default:
-		match->state = GAME_STATE_SELECT_PLAYERS;
-		break;
-
-	}
-}
-
-
-void match_next_state(Match *match)
-{
-	switch(match->state) {
-	case GAME_STATE_WELCOME:
-		match->state = GAME_STATE_SELECT_PLAYERS; 
-		break;
-
-	case GAME_STATE_SELECT_PLAYERS:
-		match->state = GAME_STATE_SELECT_GAME; 
-		break;
-
-	case GAME_STATE_SELECT_GAME:
-		match->state = GAME_STATE_GAME_ON;
-		break;
-
-	case GAME_STATE_GAME_ON:
-		match->state = GAME_STATE_SELECT_PLAYERS;
-		break;
-
-	default:
-		match->state = GAME_STATE_GAME_ON;
-		break;
-
-	}
-}
+//void match_next_state(Match *match)
+//{
+//	switch(match->state) {
+//	case GAME_STATE_WELCOME:
+//		match->state = GAME_STATE_SELECT_PLAYERS;
+//		break;
+//
+//	case GAME_STATE_SELECT_PLAYERS:
+//		match->state = GAME_STATE_SELECT_GAME;
+//		break;
+//
+//	case GAME_STATE_SELECT_GAME:
+//		match->state = GAME_STATE_GAME_ON;
+//		break;
+//
+//	case GAME_STATE_GAME_ON:
+//		match->state = GAME_STATE_SELECT_PLAYERS;
+//		break;
+//
+//	default:
+//		match->state = GAME_STATE_GAME_ON;
+//		break;
+//
+//	}
+//}
 
 void match_add_player(Match *match, const char *player_name)
 {
@@ -102,4 +101,10 @@ void match_set_available_game_modes(Match *match, Game_Mode *modes, size_t modes
 {
 	match->available_game_modes.game_modes       = modes;
 	match->available_game_modes.game_modes_count = modes_count;
+}
+
+
+void match_set_status_message(Match *match, const char *msg)
+{
+	strncpy(match->status_text, msg, sizeof(match->status_text));
 }
