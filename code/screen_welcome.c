@@ -1,5 +1,7 @@
 #include "screen_welcome.h"
 
+#include "screen.h"
+#include "darts.h"
 
 void screen_welcome_on_enter(struct Screen *screen, struct Match *match)
 {

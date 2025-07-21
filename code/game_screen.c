@@ -10,7 +10,19 @@
 
 #include <assert.h>
 
-static Game_Screen g_game_screens[] = {
+static struct Game_Mode g_game_modes[] = {
+	{
+		.name = "X01",
+		.description = "Start with a given score and reduce it as first",
+		.screen_id = GAME_SCREEN_GAME_X01
+	},
+	{
+		.name = "Around the Clock", 
+		.description = "Hit all fields", 
+		.screen_id = GAME_SCREEN_UNDEFINED }
+};
+
+static struct Game_Screen g_game_screens[] = {
 	{
 		.id              = GAME_SCREEN_WELCOME,
 		.on_enter        = screen_welcome_on_enter,
@@ -38,7 +50,7 @@ static Game_Screen g_game_screens[] = {
 };
 
 
-static void set_current_screen(struct Screen *screen, Game_Screen_Id new_screen)
+static void set_current_screen(struct Screen *screen, enum Game_Screen_Id new_screen)
 {
 	for (size_t i=0; i < screen->game_screen_list.count; ++i) {
 		if (screen->game_screen_list.items[i].id == new_screen) {
@@ -63,17 +75,21 @@ void game_screen_next(struct Screen *screen, struct Match *match)
 
 
 
-void game_screen_init(struct Screen *screen)
+void game_screen_init(struct Screen *screen, struct Match *match)
 {
 	screen->game_screen_list.index_active_screen = 0;
 	screen->game_screen_list.items               = g_game_screens;
 	screen->game_screen_list.count               = ARRAY_SIZE(g_game_screens);
+
+	match->game_mode_list.index_active_mode = 0;
+	match->game_mode_list.items = g_game_modes;
+	match->game_mode_list.count = ARRAY_SIZE(g_game_modes);
 }
 
 
-Game_Screen *game_screen_get_current(struct Screen *screen)
+struct Game_Screen *game_screen_get_current(struct Screen *screen)
 {
-	Game_Screen_List *list = &screen->game_screen_list;
+	struct Game_Screen_List *list = &screen->game_screen_list;
 
 	assert(list->index_active_screen >= 0);
 	assert(list->index_active_screen < (int) list->count);

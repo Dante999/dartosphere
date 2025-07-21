@@ -1,10 +1,5 @@
 #include "screen.h"
 
-#include "screen_game_on.h"
-#include "screen_welcome.h"
-#include "screen_player_selection.h"
-#include "screen_game_selection.h"
-
 #include <unistd.h>
 #include <assert.h>
 
@@ -14,7 +9,6 @@
 #include <SDL_keycode.h>
 
 #include "libcutils/logger.h"
-#include "libcutils/util_makros.h"
 
 static SDL_Color g_color_black  = {0, 0 , 0, 255};
 //static SDL_Color     screen->font_bg  = {255, 255, 255, 255};
@@ -33,7 +27,7 @@ static SDL_Color g_color_black  = {0, 0 , 0, 255};
 
 
 
-void screen_set_color(struct Screen *screen, Screen_Color color)
+void screen_set_color(struct Screen *screen, enum Screen_Color color)
 {
 	switch(color) {
 	case SCREEN_COLOR_BLACK:
@@ -194,25 +188,6 @@ void screen_draw_option(
 	vsnprintf(buffer, sizeof(buffer), fmt_value, arg_list);
 	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_L, "%s", buffer);
 
-}
-
-void screen_draw_int_chooser(struct Screen *screen, int x_offset, int y_index, String_Chooser *chooser, bool is_selected)
-{
-	int x = SCREEN_BORDER_WIDTH;
-	int y = Y_OFFSET_CHOOSER + (y_index * 50);
-
-	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_L, "%s", chooser->name);
-	x += x_offset;
-
-	SDL_Rect outlineRect = {x+5, y+5, CHOOSER_INT_WIDTH, CHOOSER_HEIGHT}; // x, y, width, height
-	if (is_selected) {
-		screen_set_color(screen, SCREEN_COLOR_GREY);;
-		SDL_RenderFillRect(screen->renderer, &outlineRect);
-	}
-
-	screen_set_color(screen, SCREEN_COLOR_BLACK);;
-	SDL_RenderDrawRect(screen->renderer, &outlineRect);
-	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_L, "%d", chooser->values[chooser->selected]);
 }
 
 Result screen_init(struct Screen *screen, int width, int height)

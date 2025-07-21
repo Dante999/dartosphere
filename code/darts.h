@@ -10,17 +10,9 @@
 #include <stddef.h>
 #include <stdbool.h>
 
+#include "game_screen.h"
 
-struct Game_Mode {
-	char name[255];
-	char description[255];
-};
 
-struct Game_Mode_List {
-	struct Game_Mode *items;
-	size_t count;
-	int    index_active_mode;
-};
 
 enum Field_Type {
 	DARTS_SINGLE,
