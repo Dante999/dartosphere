@@ -119,6 +119,9 @@ void screen_game_selection_on_exit(struct Screen *screen, struct Match *match)
 	(void) screen;
 
 	match->legs_for_win = (size_t)g_chooser_legs_for_win.value;
+
+	enum Game_Screen_Id next_id = match->game_mode_list.items[g_chooser_game_mode.value].screen_id;
+	game_screen_get_current(screen)->next_screen = next_id;
 }
 
 

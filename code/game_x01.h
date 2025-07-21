@@ -2,23 +2,29 @@
 #define GAME_X01_H
 
 
-typedef enum {
+enum X01_Score {
 	X01_SCORE_301,
 	X01_SCORE_501,
-	X01_SCORE_701
-} X01_Score;
+	X01_SCORE_701,
+	// ----------
+	X01_SCORE_MAX
+};
 
-typedef enum {
+enum X01_Mode{
 	X01_MODE_STRAIGHT,
 	X01_MODE_DOUBLE,
-	X01_MODE_MASTER
-} X01_Mode;
+	X01_MODE_MASTER,
+	// ---------
+	X01_MODE_MAX
+};
 
-struct {
-	X01_Score start_score;
-	X01_Mode  mode_in;
-	X01_Mode  mode_out;
-} Game_X01;
+struct Game_X01 {
+	enum X01_Score start_score;
+	enum X01_Mode  check_in;
+	enum X01_Mode  check_out;
+};
 
+const char *game_x01_score_as_string(enum X01_Score);
+const char *game_x01_mode_as_string(enum X01_Mode);
 
 #endif // GAME_X01_H

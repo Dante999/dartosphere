@@ -5,8 +5,10 @@
 #include "screen_welcome.h"
 #include "screen_player_selection.h"
 #include "screen_game_selection.h"
+#include "screen_game_x01.h"
 
 #include "libcutils/util_makros.h"
+#include "libcutils/logger.h"
 
 #include <assert.h>
 
@@ -46,6 +48,14 @@ static struct Game_Screen g_game_screens[] = {
 		.on_exit         = screen_game_selection_on_exit,
 		.next_screen     = GAME_SCREEN_WELCOME,
 		.previous_screen = GAME_SCREEN_SELECT_PLAYERS
+	},
+	{
+		.id              = GAME_SCREEN_GAME_X01,
+		.on_enter        = screen_game_x01_on_enter,
+		.refresh         = screen_game_x01_refresh,
+		.on_exit         = screen_game_x01_on_exit,
+		.next_screen     = GAME_SCREEN_SELECT_PLAYERS,
+		.previous_screen = GAME_SCREEN_SELECT_GAME,
 	}
 };
 
