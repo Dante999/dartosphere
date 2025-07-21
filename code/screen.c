@@ -31,32 +31,6 @@ static SDL_Color g_color_black  = {0, 0 , 0, 255};
 #define STATUS_BOX_HEIGHT   50
 #define Y_OFFSET_STATUS_MSG (SCREEN_LOGICAL_HEIGHT-SCREEN_BORDER_WIDTH-STATUS_BOX_HEIGHT)
 
-static Game_Screen g_game_screens[] = {
-	{
-		.id              = GAME_SCREEN_WELCOME,
-		.on_enter        = screen_welcome_on_enter,
-		.refresh         = screen_welcome_refresh,
-		.on_exit         = screen_welcome_on_exit,
-		.next_screen     = GAME_SCREEN_SELECT_PLAYERS,
-		.previous_screen = GAME_SCREEN_WELCOME
-	},
-	{
-		.id              = GAME_SCREEN_SELECT_PLAYERS,
-		.on_enter        = screen_player_selection_on_enter,
-		.refresh         = screen_player_selection_refresh,
-		.on_exit         = screen_player_selection_on_exit,
-		.next_screen     = GAME_SCREEN_SELECT_GAME,
-		.previous_screen = GAME_SCREEN_WELCOME
-	},
-	{
-		.id              = GAME_SCREEN_SELECT_GAME,
-		.on_enter        = screen_game_selection_on_enter,
-		.refresh         = screen_game_selection_refresh,
-		.on_exit         = screen_game_selection_on_exit,
-		.next_screen     = GAME_SCREEN_WELCOME,
-		.previous_screen = GAME_SCREEN_SELECT_PLAYERS
-	}
-};
 
 
 void screen_set_color(Screen *screen, Screen_Color color)
@@ -189,38 +163,11 @@ static void screen_handle_keypress(Screen *screen, SDL_Keysym *key)
 }
 
 
-static Game_Screen *get_current_screen(Screen *screen)
-{
-	for (size_t i=0; i < screen->game_screens_count; ++i) {
-		Game_Screen *ptr = &screen->game_screens[i];
-
-		if (ptr->id == screen->current_screen) {
-			return ptr;
-		}
-	}
-
-	assert(false && "no current screen found!");
-}
-
-void screen_previous(Screen *screen, Match *match)
-{
-	get_current_screen(screen)->on_exit(screen, match);
-	screen->current_screen = get_current_screen(screen)->previous_screen;
-	get_current_screen(screen)->on_enter(screen, match);
-
-}
-
-void screen_next(Screen *screen, Match *match)
-{
-	get_current_screen(screen)->on_exit(screen, match);
-	screen->current_screen = get_current_screen(screen)->next_screen;
-	get_current_screen(screen)->on_enter(screen, match);
-}
 
 static void screen_handle_states(Screen *screen, Match *match)
 {
-	get_current_screen(screen)->refresh(screen, match);
-
+	game_screen_get_current(screen)->refresh(screen, match);
+	screen->game_screen_list.
 	screen_draw_header(screen, match);
 	screen_draw_status(screen, match);
 }

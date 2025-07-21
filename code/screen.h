@@ -2,6 +2,7 @@
 #define SCREEN_H
 
 #include "darts.h"
+#include "game_screen.h"
 
 #include "libcutils/result.h"
 
@@ -23,24 +24,8 @@
 #define MAX_OPTION_VALUE_LEN    255
 
 
-typedef struct screen Screen; // forward declaration
 
 
-typedef enum {
-	GAME_SCREEN_WELCOME,
-	GAME_SCREEN_SELECT_PLAYERS,
-	GAME_SCREEN_SELECT_GAME,
-	GAME_SCREEN_GAME_ON
-} Game_Screen_Id;
-
-typedef struct {
-	Game_Screen_Id id;
-	void (*on_enter)(Screen *screen, Match *match);
-	void (*refresh)(Screen *screen, Match *match);
-	void (*on_exit)(Screen *screen, Match *match);
-	Game_Screen_Id next_screen;
-	Game_Screen_Id previous_screen;
-} Game_Screen;
 
 typedef enum {
 	DKEY_NONE,
@@ -61,7 +46,7 @@ typedef enum {
 	DKEY_9
 } Game_Keypress;
 
-struct screen {
+typedef struct screen {
 	SDL_Window     *window;
 	SDL_Renderer   *renderer;
 	TTF_Font       *font;
@@ -71,11 +56,9 @@ struct screen {
 		char header_third[255];
 		char status_text[255];
 	} header_footer;
-	Game_Screen    *game_screens;
-	size_t          game_screens_count;
-	Game_Screen_Id  current_screen;
-	Game_Keypress   key_pressed;
-};
+	Game_Screen_List game_screen_list;
+	Game_Keypress    key_pressed;
+} Screen;
 
 
 typedef enum {

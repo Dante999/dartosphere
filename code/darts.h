@@ -12,38 +12,6 @@
 
 
 typedef struct {
-	char name[MAX_PLAYER_NAME_LEN];
-	bool is_active;
-	uint16_t score;
-	uint16_t legs_won;
-} Player;
-
-typedef struct {
-	Player items[MAX_PLAYER_COUNT];
-	size_t count;
-} Player_List;
-
-typedef enum {
-	DARTS_SINGLE,
-	DARTS_DOUBLE,
-	DARTS_TRIPPLE
-} Field_Type;
-
-char field_type_as_char(Field_Type type);
-
-
-
-typedef struct {
-	Field_Type field_type;
-	int16_t    field_value;
-	bool       is_active;
-} Dart;
-
-typedef struct {
-	Dart dart[3];
-} Turn;
-
-typedef struct {
 	char name[255];
 	char description[255];
 } Game_Mode;
@@ -51,20 +19,49 @@ typedef struct {
 typedef struct {
 	Game_Mode *items;
 	size_t     count;
+	int        index_active_mode;
 } Game_Mode_List;
+
+typedef enum {
+	DARTS_SINGLE,
+	DARTS_DOUBLE,
+	DARTS_TRIPPLE
+} Field_Type;
+
+typedef struct {
+	Field_Type field_type;
+	int16_t    field_value;
+} Dart_Hit;
+
+typedef struct {
+	Dart_Hit dart[3];
+	int index_active_dart;
+} Turn;
 
 
 
 
 typedef struct {
-	Game_Mode            *game_mode;
+	char     name[MAX_PLAYER_NAME_LEN];
+	Turn     turn;
+	uint16_t score;
+	uint16_t legs_won;
+} Player;
+
+typedef struct {
+	Player items[MAX_PLAYER_COUNT];
+	size_t count;
+	int    index_active_player;
+} Player_List;
+
+typedef struct {
 	Player_List    player_list;
 	Game_Mode_List game_mode_list;
-	Turn           player_turn;
 	size_t legs_for_win;
 	size_t round;
 } Match;
 
+char field_type_as_char(Field_Type type);
 void match_init(Match *match);
 void match_add_player(Match *match, const char *name);
 void match_remove_player(Match *match);
