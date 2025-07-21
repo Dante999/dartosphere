@@ -3,8 +3,9 @@
 
 #include <stddef.h>
 
-struct screen;
-struct match;
+// forward declarations
+struct Screen;
+struct Match;
 
 
 
@@ -17,9 +18,9 @@ typedef enum {
 
 typedef struct {
 	Game_Screen_Id id;
-	void (*on_enter)(struct screen *screen, struct match *match);
-	void (*refresh)(struct screen *screen, struct match *match);
-	void (*on_exit)(struct screen *screen, struct match *match);
+	void (*on_enter)(struct Screen *screen , struct Match *match);
+	void (*refresh)(struct Screen *screen  , struct Match *match);
+	void (*on_exit)(struct Screen *screen  , struct Match *match);
 	Game_Screen_Id next_screen;
 	Game_Screen_Id previous_screen;
 } Game_Screen;
@@ -31,11 +32,13 @@ typedef struct {
 } Game_Screen_List;
 
 
-void game_screen_init(struct screen *screen);
-void game_screen_refresh(struct screen *screen, struct match *match);
-void game_screen_previous(struct screen *screen, struct match *match);
-void game_screen_next(struct screen *screen, struct match *match);
+void game_screen_init(struct Screen *screen);
+void game_screen_refresh(struct Screen *screen, struct Match *match);
+void game_screen_previous(struct Screen *screen, struct Match *match);
+void game_screen_next(struct Screen *screen, struct Match *match);
+void game_screen_set_header(struct Screen *screen, const char *first_line, const char *second_line, const char *third_line);
+void game_screen_set_status(struct Screen *screen, const char *status);
 
-Game_Screen *game_screen_get_current(struct screen *screen);
+Game_Screen *game_screen_get_current(struct Screen *screen);
 
 #endif

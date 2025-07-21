@@ -6,6 +6,7 @@
 
 #include "libcutils/util_makros.h"
 #include "darts.h"
+#include "game_screen.h"
 
 #include <unistd.h>
 
@@ -16,7 +17,7 @@
 #define SCREEN_HEIGHT 600*SCREEN_SCALE
 
 
-static Game_Mode g_game_modes[] = {
+static struct Game_Mode g_game_modes[] = {
 	{"X01"             , "Start with a given score and reduce it as first" },
 	{"Around the Clock", "Hit all fields" }
 };
@@ -28,13 +29,17 @@ int main(void)
 {
 	log_info("Application started!\n");
 
-	Match match = {0};
+	struct Match match = {0};
 	match_init(&match);
 	match_set_game_mode_list(&match, g_game_modes, ARRAY_SIZE(g_game_modes));
-	
-	Screen screen = {0};
 
-	Result r = screen_init(&screen, &match, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+	struct Screen screen = {0};
+
+	game_screen_init(&screen);
+	game_screen_get_current(&screen)->on_enter(&screen, &match);
+
+	Result r = screen_init(&screen, SCREEN_WIDTH, SCREEN_HEIGHT);
 	if (!r.success) {
 		log_error("failed to load screen: %s\n", r.msg);
 		return 1;

@@ -46,7 +46,7 @@ typedef enum {
 	DKEY_9
 } Game_Keypress;
 
-typedef struct screen {
+struct Screen {
 	SDL_Window     *window;
 	SDL_Renderer   *renderer;
 	TTF_Font       *font;
@@ -58,7 +58,7 @@ typedef struct screen {
 	} header_footer;
 	Game_Screen_List game_screen_list;
 	Game_Keypress    key_pressed;
-} Screen;
+};
 
 
 typedef enum {
@@ -77,20 +77,14 @@ typedef struct {
 
 
 
-Result screen_init(Screen *screen, Match *match, int width, int height);
-void   screen_set_color(Screen *screen, Screen_Color color);
-void   screen_draw_text(Screen *screen, int x, int y, int font_size, const char *fmt, ...);
+Result screen_init(struct Screen *screen, int width, int height);
+void   screen_set_color(struct Screen *screen, Screen_Color color);
+void   screen_draw_text(struct Screen *screen, int x, int y, int font_size, const char *fmt, ...);
 
-
-
-void screen_previous(Screen *screen, Match *match);
-void screen_next(Screen *screen, Match *match);
-void screen_set_header(Screen *screen, const char *first_line, const char *second_line, const char *third_line);
-void screen_set_status(Screen *screen, const char *msg);
 
 
 void screen_draw_option(
-	Screen *screen,
+	struct Screen *screen,
 	int name_width,
 	int value_width,
 	int y_index,
@@ -98,11 +92,11 @@ void screen_draw_option(
 	const char *name,
 	const char *fmt_value, ...);
 
-void   screen_draw_str_chooser(Screen *screen, int y_index, String_Chooser *chooser);
-void   screen_draw_int_chooser(Screen *screen, int x_offset, int y_index, String_Chooser *chooser, bool is_selected);
+void   screen_draw_str_chooser(struct Screen *screen, int y_index, String_Chooser *chooser);
+void   screen_draw_int_chooser(struct Screen *screen, int x_offset, int y_index, String_Chooser *chooser, bool is_selected);
 
 
-void   screen_destroy(Screen *screen);
-bool   screen_refresh(Screen *screen, Match *match);
+void   screen_destroy(struct Screen *screen);
+bool   screen_refresh(struct Screen *screen, struct Match *match);
 
 #endif // SCREEN_H

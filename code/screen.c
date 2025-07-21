@@ -33,7 +33,7 @@ static SDL_Color g_color_black  = {0, 0 , 0, 255};
 
 
 
-void screen_set_color(Screen *screen, Screen_Color color)
+void screen_set_color(struct Screen *screen, Screen_Color color)
 {
 	switch(color) {
 	case SCREEN_COLOR_BLACK:
@@ -53,7 +53,7 @@ static void check_sdl(int sdl_error)
 	}
 }
 
-static Result screen_load_ttf_font(Screen *screen, const char *filepath)
+static Result screen_load_ttf_font(struct Screen *screen, const char *filepath)
 {
 	TTF_Init();
 	screen->font = TTF_OpenFont(filepath, 24);
@@ -70,7 +70,7 @@ static Result screen_load_ttf_font(Screen *screen, const char *filepath)
 }
 
 
-void screen_draw_text(Screen *screen, int x, int y, int font_size, const char *fmt, ...)
+void screen_draw_text(struct Screen *screen, int x, int y, int font_size, const char *fmt, ...)
 {
 	if ( fmt == NULL || strlen(fmt) == 0) {
 		return;
@@ -107,10 +107,8 @@ void screen_draw_text(Screen *screen, int x, int y, int font_size, const char *f
 	SDL_DestroyTexture(texture);
 }
 
-static void screen_draw_status(Screen *screen, Match *match)
+static void screen_draw_status(struct Screen *screen)
 {
-	(void) match;
-
 	const int x = SCREEN_BORDER_WIDTH;
 	const int y = Y_OFFSET_STATUS_MSG;
 
@@ -121,10 +119,8 @@ static void screen_draw_status(Screen *screen, Match *match)
 	screen_draw_text(screen, x+5, y+5, SCREEN_FONT_SIZE_L, screen->header_footer.status_text);
 }
 
-static void screen_draw_header(Screen *screen, Match *match)
+static void screen_draw_header(struct Screen *screen)
 {
-	(void) match;
-
 	const int x = SCREEN_BORDER_WIDTH;
 	int       y = SCREEN_BORDER_WIDTH;;
 
@@ -139,7 +135,7 @@ static void screen_draw_header(Screen *screen, Match *match)
 }
 
 
-static void screen_handle_keypress(Screen *screen, SDL_Keysym *key)
+static void screen_handle_keypress(struct Screen *screen, SDL_Keysym *key)
 {
 	switch(key->sym) {
 
@@ -164,20 +160,11 @@ static void screen_handle_keypress(Screen *screen, SDL_Keysym *key)
 
 
 
-static void screen_handle_states(Screen *screen, Match *match)
-{
-	game_screen_get_current(screen)->refresh(screen, match);
-	screen->game_screen_list.
-	screen_draw_header(screen, match);
-	screen_draw_status(screen, match);
-}
-
-
 #define Y_OFFSET_CHOOSER 120
 #define CHOOSER_HEIGHT   50
 #define CHOOSER_INT_WIDTH 50
 void screen_draw_option(
-	Screen *screen,
+	struct Screen *screen,
 	int name_width,
 	int value_width,
 	int y_index,
@@ -209,7 +196,7 @@ void screen_draw_option(
 
 }
 
-void screen_draw_int_chooser(Screen *screen, int x_offset, int y_index, String_Chooser *chooser, bool is_selected)
+void screen_draw_int_chooser(struct Screen *screen, int x_offset, int y_index, String_Chooser *chooser, bool is_selected)
 {
 	int x = SCREEN_BORDER_WIDTH;
 	int y = Y_OFFSET_CHOOSER + (y_index * 50);
@@ -228,8 +215,9 @@ void screen_draw_int_chooser(Screen *screen, int x_offset, int y_index, String_C
 	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_L, "%d", chooser->values[chooser->selected]);
 }
 
-Result screen_init(Screen *screen, Match *match, int width, int height)
+Result screen_init(struct Screen *screen, int width, int height)
 {
+
 	if(SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
 		return result_make(false, "SDL could not be initialized!\n"
@@ -276,14 +264,10 @@ Result screen_init(Screen *screen, Match *match, int width, int height)
 		return r;
 	}
 
-	screen->current_screen     = GAME_SCREEN_WELCOME;
-	screen->game_screens       = g_game_screens;
-	screen->game_screens_count = ARRAY_SIZE(g_game_screens);
-	get_current_screen(screen)->on_enter(screen, match);
 	return result_make(true, "");
 }
 
-void screen_destroy(Screen *screen)
+void screen_destroy(struct Screen *screen)
 {
 	log_info("destroying SDL Window\n");
 	SDL_DestroyRenderer(screen->renderer);
@@ -291,7 +275,7 @@ void screen_destroy(Screen *screen)
 	SDL_Quit();
 }
 
-bool screen_refresh(Screen *screen, Match *match)
+bool screen_refresh(struct Screen *screen, struct Match *match)
 {
 	bool quit = false;
 
@@ -321,7 +305,9 @@ bool screen_refresh(Screen *screen, Match *match)
 
 
 	// add drawing routines here
-	screen_handle_states(screen, match);
+	game_screen_get_current(screen)->refresh(screen, match);
+	screen_draw_header(screen);
+	screen_draw_status(screen);
 	// -------------------
 
 
@@ -333,14 +319,14 @@ bool screen_refresh(Screen *screen, Match *match)
 	return quit;
 }
 
-void screen_set_header(Screen *screen, const char *first_line, const char *second_line, const char *third_line)
-{
-	strncpy(screen->header_footer.header_first, first_line, sizeof(screen->header_footer.header_first));
-	strncpy(screen->header_footer.header_second, second_line, sizeof(screen->header_footer.header_second));
-	strncpy(screen->header_footer.header_third, third_line, sizeof(screen->header_footer.header_third));
-}
 
-void screen_set_status(Screen *screen, const char *status)
-{
-	strncpy(screen->header_footer.status_text, status, sizeof(screen->header_footer.status_text));
-}
+
+
+
+
+
+
+
+
+
+

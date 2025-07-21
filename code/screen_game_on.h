@@ -3,6 +3,6 @@
 
 #include "screen.h"
 
-void screen_game_on(Screen *screen, Match *match);
+void screen_game_on(struct Screen *screen, struct Match *match);
 
 #endif // SCREEN_GAME_ON_H

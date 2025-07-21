@@ -37,13 +37,13 @@ static Line_Cursor g_line_cursor = {
 
 static int g_cursor_state = CURSOR_MOVING;
 
-void update_max_line_index(Match *match)
+void update_max_line_index(struct Match *match)
 {
 	g_line_cursor.max_index = match->player_list.count + LINE_INDEX_PLAYER_AMOUNT;
 }
 
 
-static void screen_show_player_amount_box(Screen *screen, Match *match)
+static void screen_show_player_amount_box(struct Screen *screen, struct Match *match)
 {
 	bool is_selected = (g_line_cursor.index == LINE_INDEX_PLAYER_AMOUNT);
 
@@ -66,10 +66,10 @@ static void screen_show_player_amount_box(Screen *screen, Match *match)
 
 }
 
-static void screen_show_players(Screen *screen, Match *match)
+static void screen_show_players(struct Screen *screen, struct Match *match)
 {
 	for (size_t i=0; i < match->player_list.count; ++i) {
-		Player *player = &match->player_list.items[i];
+		struct Player *player = &match->player_list.items[i];
 
 		//const int x = (1+i)*SCREEN_BORDER_WIDTH + (i*PLAYER_BOX_SIZE);
 		const int x = SCREEN_BORDER_WIDTH;
@@ -89,26 +89,26 @@ static void screen_show_players(Screen *screen, Match *match)
 }
 
 
-void screen_player_selection_on_enter(Screen *screen, Match *match)
+void screen_player_selection_on_enter(struct Screen *screen, struct Match *match)
 {
 	(void) screen;
 	(void) match;
 	g_line_cursor.index = 0;
 	update_max_line_index(match);
 
-	screen_set_header(screen, "Select Players", "", "");
-	screen_set_status(screen, "Press <ENTER> to continue");
+	game_screen_set_header(screen, "Select Players", "", "");
+	game_screen_set_status(screen, "Press <ENTER> to continue");
 }
-void screen_player_selection_on_exit(Screen *screen, Match *match)
+void screen_player_selection_on_exit(struct Screen *screen, struct Match *match)
 {
 	(void) screen;
 	(void) match;
 }
 
-void screen_player_selection_refresh(Screen *screen, Match *match)
+void screen_player_selection_refresh(struct Screen *screen, struct Match *match)
 {
 	if (screen->key_pressed == DKEY_MINUS) {
-		screen_previous(screen, match);
+		game_screen_previous(screen, match);
 	}
 
 	if (g_cursor_state == CURSOR_MOVING) {
@@ -118,7 +118,7 @@ void screen_player_selection_refresh(Screen *screen, Match *match)
 			line_cursor_down(&g_line_cursor);
 
 		if (screen->key_pressed == DKEY_ENTER) {
-			screen_next(screen, match);
+			game_screen_next(screen, match);
 		}
 	}
 

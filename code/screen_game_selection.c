@@ -60,7 +60,7 @@ static Int_Chooser g_chooser_legs_for_win = {
 
 
 
-static void screen_show_available_games(Screen *screen, Match *match)
+static void screen_show_available_games(struct Screen *screen, struct Match *match)
 {
 	bool is_selected = (g_line_cursor.index == LINE_INDEX_GAME_MODE);
 
@@ -78,7 +78,7 @@ static void screen_show_available_games(Screen *screen, Match *match)
 		match->game_mode_list.items[g_chooser_game_mode.value].name );
 }
 
-static void screen_show_legs_for_win(Screen *screen, Match *match)
+static void screen_show_legs_for_win(struct Screen *screen, struct Match *match)
 {
 	(void) match;
 	bool is_selected = (g_line_cursor.index == LINE_INDEX_LEGS_FOR_WIN);
@@ -101,7 +101,7 @@ static void screen_show_legs_for_win(Screen *screen, Match *match)
 			"%d",
 			g_chooser_legs_for_win.value);
 }
-void screen_game_selection_on_enter(Screen *screen, Match *match)
+void screen_game_selection_on_enter(struct Screen *screen, struct Match *match)
 {
 	(void) screen;
 
@@ -109,12 +109,12 @@ void screen_game_selection_on_enter(Screen *screen, Match *match)
 	g_chooser_game_mode.max_value = match->game_mode_list.count-1;
 	g_line_cursor.index           = 0;
 
-	screen_set_header(screen, "Select Game Mode", "", "");
-	screen_set_status(screen, "Press <ENTER> to continue");
+	game_screen_set_header(screen, "Select Game Mode", "", "");
+	game_screen_set_status(screen, "Press <ENTER> to continue");
 }
 
 
-void screen_game_selection_on_exit(Screen *screen, Match *match)
+void screen_game_selection_on_exit(struct Screen *screen, struct Match *match)
 {
 	(void) screen;
 
@@ -122,7 +122,7 @@ void screen_game_selection_on_exit(Screen *screen, Match *match)
 }
 
 
-void screen_game_selection_refresh(Screen *screen, Match *match)
+void screen_game_selection_refresh(struct Screen *screen, struct Match *match)
 {
 	if (screen->key_pressed == DKEY_8) {
 		line_cursor_up(&g_line_cursor);
@@ -131,10 +131,10 @@ void screen_game_selection_refresh(Screen *screen, Match *match)
 		line_cursor_down(&g_line_cursor);
 	}
 	else if (screen->key_pressed == DKEY_MINUS) {
-		screen_previous(screen, match);
+		game_screen_previous(screen, match);
 	}
 	if (screen->key_pressed == DKEY_ENTER) {
-		screen_next(screen, match);
+		game_screen_next(screen, match);
 	}
 
 	screen_show_available_games(screen, match);

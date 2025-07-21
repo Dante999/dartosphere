@@ -2,7 +2,7 @@
 
 #include "string.h"
 
-char field_type_as_char(Field_Type type)
+char field_type_as_char(enum Field_Type type)
 {
 	switch(type) {
 		case DARTS_SINGLE : return 'S';
@@ -15,7 +15,7 @@ char field_type_as_char(Field_Type type)
 
 
 
-void match_init(Match *match)
+void match_init(struct Match *match)
 {
 	match->player_list.count = 0;
 	match_add_player(match, "Player 1");
@@ -26,9 +26,9 @@ void match_init(Match *match)
 
 
 
-void match_add_player(Match *match, const char *player_name)
+void match_add_player(struct Match *match, const char *player_name)
 {
-	Player_List *player_list = &match->player_list;
+	struct Player_List *player_list = &match->player_list;
 
 	if (player_list->count < MAX_PLAYER_COUNT) {
 		strncpy(player_list->items[player_list->count].name, player_name, MAX_PLAYER_NAME_LEN);
@@ -36,7 +36,7 @@ void match_add_player(Match *match, const char *player_name)
 	}
 }
 
-void match_remove_player(Match *match)
+void match_remove_player(struct Match *match)
 {
 	if (match->player_list.count > 1) {
 		match->player_list.count -= 1;
@@ -44,7 +44,7 @@ void match_remove_player(Match *match)
 }
 
 
-void match_set_game_mode_list(Match *match, Game_Mode *modes, size_t modes_count)
+void match_set_game_mode_list(struct Match *match, struct Game_Mode *modes, size_t modes_count)
 {
 	match->game_mode_list.items = modes;
 	match->game_mode_list.count = modes_count;
