@@ -226,9 +226,9 @@ void screen_game_x01_on_enter(struct Screen *screen, struct Match *match)
 	(void) screen;
 	(void) match;
 
-	g_game.start_score = g_chooser_score.value;
-	g_game.check_in    = g_chooser_check_in.value;
-	g_game.check_out   = g_chooser_check_out.value;
+	g_chooser_score.value     = g_game.start_score;
+	g_chooser_check_in.value  = g_game.check_in;
+	g_chooser_check_out.value = g_game.check_out;
 }
 
 void screen_game_x01_on_exit(struct Screen *screen, struct Match *match)
@@ -236,8 +236,8 @@ void screen_game_x01_on_exit(struct Screen *screen, struct Match *match)
 	(void) screen;
 	(void) match;
 	
-	g_chooser_score.value     = g_game.start_score;
-	g_chooser_check_in.value  = g_game.check_in;
-	g_chooser_check_out.value = g_game.check_out;
+	g_game.start_score = g_chooser_score.value;
+	g_game.check_in    = g_chooser_check_in.value;
+	g_game.check_out   = g_chooser_check_out.value;
 }
 

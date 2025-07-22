@@ -101,7 +101,7 @@ void screen_draw_text(struct Screen *screen, int x, int y, int font_size, const 
 	SDL_DestroyTexture(texture);
 }
 
-static void screen_draw_status(struct Screen *screen)
+void screen_draw_status(struct Screen *screen)
 {
 	const int x = SCREEN_BORDER_WIDTH;
 	const int y = Y_OFFSET_STATUS_MSG;
@@ -113,7 +113,7 @@ static void screen_draw_status(struct Screen *screen)
 	screen_draw_text(screen, x+5, y+5, SCREEN_FONT_SIZE_L, screen->header_footer.status_text);
 }
 
-static void screen_draw_header(struct Screen *screen)
+void screen_draw_header(struct Screen *screen)
 {
 	const int x = SCREEN_BORDER_WIDTH;
 	int       y = SCREEN_BORDER_WIDTH;;
@@ -250,7 +250,7 @@ void screen_destroy(struct Screen *screen)
 	SDL_Quit();
 }
 
-bool screen_refresh(struct Screen *screen, struct Match *match)
+bool screen_rendering_start(struct Screen *screen)
 {
 	bool quit = false;
 
@@ -277,21 +277,13 @@ bool screen_refresh(struct Screen *screen, struct Match *match)
 	// Clear screen
 	check_sdl(SDL_RenderClear(screen->renderer));
 
+	return quit;
+}
 
-
-	// add drawing routines here
-	game_screen_get_current(screen)->refresh(screen, match);
-	screen_draw_header(screen);
-	screen_draw_status(screen);
-	// -------------------
-
-
-
-	// Update screen
+void screen_rendering_stop(struct Screen *screen)
+{
 	SDL_RenderPresent(screen->renderer);
 	SDL_Delay(10);
-
-	return quit;
 }
 
 

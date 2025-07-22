@@ -42,7 +42,14 @@ int main(void)
 	bool quit = false;
 
 	while(!quit) {
-		quit = screen_refresh(&screen, &match);
+		quit = screen_rendering_start(&screen);
+		
+		game_screen_get_current(&screen)->refresh(&screen, &match);
+		screen_draw_header(&screen);
+		screen_draw_status(&screen);
+
+		screen_rendering_stop(&screen);
+
 	}
 
 	screen_destroy(&screen);

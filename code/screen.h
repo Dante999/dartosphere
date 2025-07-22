@@ -13,11 +13,11 @@
 #define SCREEN_LOGICAL_WIDTH  800
 #define SCREEN_LOGICAL_HEIGHT 600
 
-#define SCREEN_FONT_SIZE_XL   64-10
-#define SCREEN_FONT_SIZE_L    48-8
-#define SCREEN_FONT_SIZE_M    24-0
-#define SCREEN_FONT_SIZE_S    18-0
-#define SCREEN_FONT_SIZE_XS   16-0
+#define SCREEN_FONT_SIZE_XL   54
+#define SCREEN_FONT_SIZE_L    36
+#define SCREEN_FONT_SIZE_M    24
+#define SCREEN_FONT_SIZE_S    18
+#define SCREEN_FONT_SIZE_XS   16
 
 
 #define MAX_OPTION_VALUE_COUNT  5
@@ -70,10 +70,14 @@ enum Screen_Color {
 
 
 Result screen_init(struct Screen *screen, int width, int height);
-bool   screen_refresh(struct Screen *screen, struct Match *match);
-void   screen_destroy(struct Screen *screen);
-void   screen_set_color(struct Screen *screen, enum Screen_Color color);
-void   screen_draw_text(struct Screen *screen, int x, int y, int font_size, const char *fmt, ...);
+void screen_destroy(struct Screen *screen);
+bool screen_rendering_start(struct Screen *screen);
+void screen_rendering_stop(struct Screen *screen);
+
+void screen_set_color(struct Screen *screen, enum Screen_Color color);
+void screen_draw_header(struct Screen *screen);
+void screen_draw_status(struct Screen *screen);
+void screen_draw_text(struct Screen *screen, int x, int y, int font_size, const char *fmt, ...);
 
 void screen_draw_option(
 	struct Screen *screen,
