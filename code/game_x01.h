@@ -27,4 +27,6 @@ struct Game_X01 {
 const char *game_x01_score_as_string(enum X01_Score);
 const char *game_x01_mode_as_string(enum X01_Mode);
 
+struct Game_X01 *game_x01_get_instance(void);
+
 #endif // GAME_X01_H

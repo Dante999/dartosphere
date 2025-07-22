@@ -110,7 +110,7 @@ void screen_draw_status(struct Screen *screen)
 
 	SDL_Rect outlineRect = {x, y, STATUS_BOX_WIDTH, STATUS_BOX_HEIGHT}; // x, y, width, height
 	SDL_RenderDrawRect(screen->renderer, &outlineRect);
-	screen_draw_text(screen, x+5, y+5, SCREEN_FONT_SIZE_L, screen->header_footer.status_text);
+	screen_draw_text(screen, x+5, y+5, SCREEN_FONT_SIZE_L, screen->status);
 }
 
 void screen_draw_header(struct Screen *screen)
@@ -119,13 +119,13 @@ void screen_draw_header(struct Screen *screen)
 	int       y = SCREEN_BORDER_WIDTH;;
 
 
-	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_L, screen->header_footer.header_first);
+	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_L, screen->header.line0);
 	y+= SCREEN_FONT_SIZE_L+5;
 
-	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_S, screen->header_footer.header_second);
+	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_S, screen->header.line1);
 	y+= SCREEN_FONT_SIZE_S+5;
 
-	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_M, screen->header_footer.header_third);
+	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_M, screen->header.line2);
 }
 
 
@@ -212,7 +212,7 @@ Result screen_init(struct Screen *screen, int width, int height)
 			SDL_WINDOWPOS_UNDEFINED,
 			SDL_WINDOWPOS_UNDEFINED,
 			width, height,
-			SDL_WINDOW_SHOWN);
+			SDL_WINDOW_FULLSCREEN_DESKTOP);
 	if(!screen->window) {
 		return result_make(false, "Window could not be created!\n"
 				"SDL_Error: %s\n", SDL_GetError());

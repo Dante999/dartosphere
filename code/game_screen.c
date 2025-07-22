@@ -5,7 +5,7 @@
 #include "screen_welcome.h"
 #include "screen_player_selection.h"
 #include "screen_game_selection.h"
-#include "screen_game_x01.h"
+#include "game_x01_screen.h"
 
 #include "libcutils/util_makros.h"
 #include "libcutils/logger.h"
@@ -16,7 +16,7 @@ static struct Game_Mode g_game_modes[] = {
 	{
 		.name = "X01",
 		.description = "Start with a given score and reduce it as first",
-		.screen_id = GAME_SCREEN_GAME_X01
+		.screen_id = GAME_SCREEN_GAME_X01_CONFIGURE
 	},
 	{
 		.name = "Around the Clock", 
@@ -50,12 +50,20 @@ static struct Game_Screen g_game_screens[] = {
 		.previous_screen = GAME_SCREEN_SELECT_PLAYERS
 	},
 	{
-		.id              = GAME_SCREEN_GAME_X01,
-		.on_enter        = screen_game_x01_on_enter,
-		.refresh         = screen_game_x01_refresh,
-		.on_exit         = screen_game_x01_on_exit,
-		.next_screen     = GAME_SCREEN_SELECT_PLAYERS,
+		.id              = GAME_SCREEN_GAME_X01_CONFIGURE,
+		.on_enter        = screen_configure_game_x01_on_enter,
+		.refresh         = screen_configure_game_x01_refresh,
+		.on_exit         = screen_configure_game_x01_on_exit,
+		.next_screen     = GAME_SCREEN_GAME_X01_PLAY,
 		.previous_screen = GAME_SCREEN_SELECT_GAME,
+	},
+	{
+		.id              = GAME_SCREEN_GAME_X01_PLAY,
+		.on_enter        = screen_play_game_x01_on_enter,
+		.refresh         = screen_play_game_x01_refresh,
+		.on_exit         = screen_play_game_x01_on_exit,
+		.next_screen     = GAME_SCREEN_SELECT_PLAYERS,
+		.previous_screen = GAME_SCREEN_GAME_X01_CONFIGURE,
 	}
 };
 
@@ -109,12 +117,12 @@ struct Game_Screen *game_screen_get_current(struct Screen *screen)
 
 void game_screen_set_header(struct Screen *screen, const char *first_line, const char *second_line, const char *third_line)
 {
-	strncpy(screen->header_footer.header_first, first_line, sizeof(screen->header_footer.header_first));
-	strncpy(screen->header_footer.header_second, second_line, sizeof(screen->header_footer.header_second));
-	strncpy(screen->header_footer.header_third, third_line, sizeof(screen->header_footer.header_third));
+	strncpy(screen->header.line0, first_line, sizeof(screen->header.line0));
+	strncpy(screen->header.line1, second_line, sizeof(screen->header.line1));
+	strncpy(screen->header.line2, third_line, sizeof(screen->header.line2));
 }
 
 void game_screen_set_status(struct Screen *screen, const char *status)
 {
-	strncpy(screen->header_footer.status_text, status, sizeof(screen->header_footer.status_text));
+	strncpy(screen->status, status, sizeof(screen->status));
 }

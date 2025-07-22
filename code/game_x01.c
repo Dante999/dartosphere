@@ -1,5 +1,16 @@
 #include "game_x01.h"
 
+static struct Game_X01 g_game = {
+	.start_score  = X01_SCORE_301,
+	.check_in     = X01_MODE_STRAIGHT,
+	.check_out    = X01_MODE_STRAIGHT,
+};
+
+struct Game_X01 *game_x01_get_instance(void)
+{
+	return &g_game;
+}
+
 const char *game_x01_score_as_string(enum X01_Score score)
 {
 	switch(score) {

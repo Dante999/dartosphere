@@ -1,5 +1,6 @@
 #include "screen_utils.h"
 
+#include <assert.h>
 
 void line_cursor_up(Line_Cursor *cursor)
 {
@@ -41,4 +42,52 @@ void int_chooser_decrease(Int_Chooser *chooser)
 	else if (chooser->value == 0 && chooser->cycle) {
 		chooser->value = chooser->max_value;
 	}
+}
+
+
+
+void update_and_draw_chooser(struct Screen *screen, struct Chooser_Bundle *bundle)
+{
+
+	for (size_t i=0; i < bundle->chooser_count; ++i) {
+
+		Int_Chooser *chooser = &bundle->chooser_list[i];
+
+		bool is_selected = (bundle->cursor.index == chooser->index);
+
+		if (is_selected) {
+			if (screen->key_pressed == chooser->key_increase) {
+				int_chooser_increase(chooser);
+			}
+			else if (screen->key_pressed == chooser->key_decrease) {
+				int_chooser_decrease(chooser);
+			}
+		}
+
+		screen_draw_option(
+			screen,
+			bundle->width_chooser_name,
+			bundle->width_chooser_value,
+			chooser->index,
+			is_selected,
+			chooser->name,
+			chooser->value_to_string(chooser->value));
+
+
+
+	}
+
+
+}
+
+
+Int_Chooser *get_chooser_from_bundle(struct Chooser_Bundle *bundle, int index)
+{
+	for (size_t i=0; i < bundle->chooser_count; ++i) {
+		Int_Chooser *chooser = &bundle->chooser_list[i];
+
+		if (chooser->index == index) return chooser;
+	}
+
+	assert(false);
 }

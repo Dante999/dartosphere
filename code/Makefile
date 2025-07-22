@@ -9,11 +9,11 @@ all:
 		main.c \
 		screen.c \
 		game_x01.c \
+		game_x01_screen.c \
 		game_screen.c \
 		screen_welcome.c \
 		screen_player_selection.c \
 		screen_game_selection.c \
-		screen_game_x01.c \
 		screen_utils.c \
 		darts.c \
 		${LIBS} \

@@ -46,16 +46,19 @@ enum Screen_Key {
 	DKEY_9
 };
 
+struct Screen_Header {
+	char line0[255];
+	char line1[255];
+	char line2[255];
+};
+
+
 struct Screen {
 	SDL_Window     *window;
 	SDL_Renderer   *renderer;
 	TTF_Font       *font;
-	struct {
-		char header_first[255];
-		char header_second[255];
-		char header_third[255];
-		char status_text[255];
-	} header_footer;
+	struct Screen_Header header;
+	char status[255];
 	struct Game_Screen_List game_screen_list;
 	enum Screen_Key key_pressed;
 };
