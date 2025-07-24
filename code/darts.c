@@ -17,32 +17,11 @@ char field_type_as_char(enum Field_Type type)
 
 void match_init(struct Match *match)
 {
-	match->player_list.count = 0;
-	match_add_player(match, "Player 1");
+	player_list_init(&match->player_list);
 
 	match->legs_for_win = DEFAULT_LEGS_FOR_WIN;
 	match->round        = 0;
 }
-
-
-
-void match_add_player(struct Match *match, const char *player_name)
-{
-	struct Player_List *player_list = &match->player_list;
-
-	if (player_list->count < MAX_PLAYER_COUNT) {
-		strncpy(player_list->items[player_list->count].name, player_name, MAX_PLAYER_NAME_LEN);
-		player_list->count++;
-	}
-}
-
-void match_remove_player(struct Match *match)
-{
-	if (match->player_list.count > 1) {
-		match->player_list.count -= 1;
-	}
-}
-
 
 void match_set_game_mode_list(struct Match *match, struct Game_Mode *modes, size_t modes_count)
 {

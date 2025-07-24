@@ -49,12 +49,10 @@ static void screen_show_player_amount_box(struct Screen *screen, struct Match *m
 
 	if (is_selected) {
 		if (screen->key_pressed == DKEY_6) {
-			char player_name[255];
-			snprintf(player_name, sizeof(player_name), "Player %zu", match->player_list.count+1);
-			match_add_player(match, player_name);
+			player_list_add_player(&match->player_list);
 		}
 		else if (screen->key_pressed == DKEY_4) {
-			match_remove_player(match);
+			player_list_remove_player(&match->player_list);
 		}
 
 		update_max_line_index(match);

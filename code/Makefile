@@ -8,6 +8,7 @@ all:
 	${CC} ${CC_FLAGS} -g -o ${PROJECT} \
 		main.c \
 		screen.c \
+		player.c \
 		game_x01.c \
 		game_x01_screen.c \
 		game_screen.c \
