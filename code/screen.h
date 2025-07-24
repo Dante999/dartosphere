@@ -9,6 +9,8 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 
+#define SCREEN_FPS            30
+
 #define SCREEN_BORDER_WIDTH   10
 #define SCREEN_LOGICAL_WIDTH  800
 #define SCREEN_LOGICAL_HEIGHT 600
@@ -57,6 +59,7 @@ struct Screen {
 	SDL_Window     *window;
 	SDL_Renderer   *renderer;
 	TTF_Font       *font;
+	uint32_t       ticks;
 	struct Screen_Header header;
 	char status[255];
 	struct Game_Screen_List game_screen_list;

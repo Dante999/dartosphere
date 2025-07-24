@@ -7,6 +7,7 @@
 #include <SDL_video.h>
 #include <SDL_ttf.h>
 #include <SDL_keycode.h>
+#include <SDL_timer.h>
 
 #include "libcutils/logger.h"
 
@@ -252,6 +253,9 @@ void screen_destroy(struct Screen *screen)
 
 bool screen_rendering_start(struct Screen *screen)
 {
+	screen->ticks = SDL_GetTicks();
+
+
 	bool quit = false;
 
 	SDL_Event event;
@@ -283,7 +287,14 @@ bool screen_rendering_start(struct Screen *screen)
 void screen_rendering_stop(struct Screen *screen)
 {
 	SDL_RenderPresent(screen->renderer);
-	SDL_Delay(10);
+
+	const uint32_t ticks_used = SDL_GetTicks() - screen->ticks;
+
+	int32_t delta = (1000/SCREEN_FPS)-ticks_used;
+
+	if (delta < 0) return;
+
+	SDL_Delay((uint32_t)delta);
 }
 
 
