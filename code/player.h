@@ -8,7 +8,7 @@
 #define MAX_PLAYER_NAME_LEN 10
 #define MAX_PLAYER_COUNT     5
 
-
+#define DART_FIELD_VALUE_UNSET -1
 
 enum Field_Type {
 	DARTS_SINGLE,
@@ -46,8 +46,12 @@ void player_list_select_previous(struct Player_List *players);
 void player_list_add_player(struct Player_List *players);
 void player_list_remove_player(struct Player_List *players);
 
+struct Player *player_list_get_active_player(struct Player_List *players);
+
+void player_end_turn(struct Player *player);
 bool player_next_dart_throw(struct Player *player);
 bool player_previous_dart_throw(struct Player *player);
 void player_clear_dart_throws(struct Player *player);
+int player_get_score_from_turn(struct Turn *turn);
 
 #endif // PLAYER_H

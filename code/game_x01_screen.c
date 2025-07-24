@@ -106,6 +106,49 @@ static void playing_set_header(struct Screen *screen, struct Match *match)
 			match->round, match->legs_for_win);
 }
 
+static void playing_next_turn(struct Match *match)
+{
+	struct Player *active_player = player_list_get_active_player(&match->player_list);
+
+	// TODO: check if player has already overshoot and if input is valid
+
+	bool has_another_throw = player_next_dart_throw(active_player);
+
+	if (!has_another_throw) {
+		int score = player_get_score_from_turn(&active_player->turn);
+
+		active_player->score += score;
+
+		player_list_select_next(&match->player_list);
+		active_player = player_list_get_active_player(&match->player_list);
+		player_clear_dart_throws(active_player);
+
+		// TODO: remove me, just for demo
+		active_player->turn.dart[0].field_type  = DARTS_SINGLE;
+		active_player->turn.dart[0].field_value = 10;
+
+		active_player->turn.dart[1].field_type  = DARTS_DOUBLE;
+		active_player->turn.dart[1].field_value = 15;
+
+		active_player->turn.dart[2].field_type  = DARTS_TRIPPLE;
+		active_player->turn.dart[2].field_value = 20;
+	}
+}
+
+static void playing_undo_turn(struct Match *match)
+{
+	struct Player *active_player = player_list_get_active_player(&match->player_list);
+
+	bool has_another_throw = player_previous_dart_throw(active_player);
+
+	if (!has_another_throw) {
+		// TODO: handle downcounting of already added scores from this
+		// round
+		player_list_select_previous(&match->player_list);
+		active_player = player_list_get_active_player(&match->player_list);
+	}
+}
+
 void screen_play_game_x01_refresh(struct Screen *screen, struct Match *match)
 {
 	//if (screen->key_pressed == DKEY_8) {
@@ -114,19 +157,16 @@ void screen_play_game_x01_refresh(struct Screen *screen, struct Match *match)
 	//else if (screen->key_pressed == DKEY_2) {
 	//	line_cursor_down(&g_chooser_bundle.cursor);
 	//}
-	//else if (screen->key_pressed == DKEY_MINUS) {
-	//	game_screen_previous(screen, match);
-	//}
-	//if (screen->key_pressed == DKEY_ENTER) {
-	//	game_screen_next(screen, match);
-	//}
+	if (screen->key_pressed == DKEY_MINUS) {
+		playing_undo_turn(match);
+	}
+	else if (screen->key_pressed == DKEY_ENTER) {
+		playing_next_turn(match);
+	}
 
 	playing_set_header(screen, match);
 	screen_show_players(screen, match);
 	screen_show_turn(screen, match);
-
-	if (screen->key_pressed == DKEY_ENTER) game_screen_next(screen, match);
-
 }
 
 void screen_play_game_x01_on_enter(struct Screen *screen, struct Match *match)
