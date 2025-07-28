@@ -92,21 +92,3 @@ Int_Chooser *get_chooser_from_bundle(struct Chooser_Bundle *bundle, int index)
 	assert(false);
 }
 
-
-
-void score_input_append(struct Score_Input *input, char value)
-{
-	for (size_t i=0; i < sizeof(input->value)-1; ++i) {
-		if (input->value[i] == '\0') {
-			input->value[i+0] = value;
-			input->value[i+1] = '\0';
-		}
-	}
-}
-
-bool score_input_drop_last(struct Score_Input *input)
-{
-	(void) input;
-	return false;
-}
-

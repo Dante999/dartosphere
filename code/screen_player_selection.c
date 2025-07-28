@@ -67,7 +67,7 @@ static void screen_show_player_amount_box(struct Screen *screen, struct Match *m
 static void screen_show_players(struct Screen *screen, struct Match *match)
 {
 	for (size_t i=0; i < match->player_list.count; ++i) {
-		struct Player *player = &match->player_list.items[i];
+		const struct Player *player = &match->player_list.items[i];
 
 		//const int x = (1+i)*SCREEN_BORDER_WIDTH + (i*PLAYER_BOX_SIZE);
 		const int x = SCREEN_BORDER_WIDTH;

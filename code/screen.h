@@ -73,7 +73,6 @@ enum Screen_Color {
 };
 
 
-char screen_key_numeric_as_char(enum Screen_Key key);
 int screen_key_numeric_value(enum Screen_Key key);
 
 Result screen_init(struct Screen *screen, int width, int height);

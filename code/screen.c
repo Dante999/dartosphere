@@ -78,7 +78,7 @@ void screen_draw_text(struct Screen *screen, int x, int y, int font_size, const 
 	va_list arg_list;
 	va_start(arg_list, fmt);
 	vsnprintf(buffer, sizeof(buffer), fmt, arg_list);
-
+	va_end(arg_list);
 
 	TTF_SetFontSize(screen->font, font_size);
 
@@ -343,24 +343,6 @@ void screen_rendering_stop(struct Screen *screen)
 
 	SDL_Delay((uint32_t)delta);
 }
-
-char screen_key_numeric_as_char(enum Screen_Key key)
-{
-	switch(key) {
-		case DKEY_0: return '0';
-		case DKEY_1: return '1';
-		case DKEY_2: return '2';
-		case DKEY_3: return '3';
-		case DKEY_4: return '4';
-		case DKEY_5: return '5';
-		case DKEY_6: return '6';
-		case DKEY_7: return '7';
-		case DKEY_8: return '8';
-		case DKEY_9: return '9';
-		default    : return '\0';
-	}
-}
-
 
 int screen_key_numeric_value(enum Screen_Key key)
 {
