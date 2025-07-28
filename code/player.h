@@ -47,11 +47,16 @@ void player_list_add_player(struct Player_List *players);
 void player_list_remove_player(struct Player_List *players);
 
 struct Player *player_list_get_active_player(struct Player_List *players);
+struct Dart_Hit *player_get_current_dart_throw(struct Player *player);
+
+void dart_hit_toggle_field_type(struct Dart_Hit *hit, enum Field_Type type);
+bool dart_hit_is_valid_input(struct Dart_Hit *hit);
+int dart_hit_get_points(struct Dart_Hit *hit);
 
 void player_end_turn(struct Player *player);
 bool player_next_dart_throw(struct Player *player);
 bool player_previous_dart_throw(struct Player *player);
 void player_clear_dart_throws(struct Player *player);
-int player_get_score_from_turn(struct Turn *turn);
+int player_get_score_from_current_turn(struct Player *player);
 
 #endif // PLAYER_H

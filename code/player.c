@@ -101,12 +101,12 @@ struct Player *player_list_get_active_player(struct Player_List *players)
 }
 
 
-int player_get_score_from_turn(struct Turn *turn)
+int player_get_score_from_current_turn(struct Player *player)
 {
 	int score = 0;
 
-	for (size_t i=0; i < ARRAY_SIZE(turn->dart); ++i) {
-		struct Dart_Hit *hit = &turn->dart[i];
+	for (size_t i=0; i < ARRAY_SIZE(player->turn.dart); ++i) {
+		struct Dart_Hit *hit = &player->turn.dart[i];
 
 		if (hit->field_value == DART_FIELD_VALUE_UNSET) continue;
 
@@ -114,4 +114,33 @@ int player_get_score_from_turn(struct Turn *turn)
 	}
 
 	return score;
+}
+
+
+struct Dart_Hit *player_get_current_dart_throw(struct Player *player)
+{
+	return &player->turn.dart[player->turn.index_active_dart];
+}
+
+void dart_hit_toggle_field_type(struct Dart_Hit *hit, enum Field_Type type)
+{
+	if (hit->field_type == type) {
+		hit->field_type = DARTS_SINGLE;
+	}
+	else {
+		hit->field_type = type;
+	}
+}
+
+bool dart_hit_is_valid_input(struct Dart_Hit *hit)
+{
+	return (hit->field_value <= 20) || 
+		(hit->field_value == 25) || 
+		(hit->field_value == 50);
+}
+
+
+int dart_hit_get_points(struct Dart_Hit *hit)
+{
+	return get_field_type_multiplier(hit->field_type) * hit->field_value;
 }

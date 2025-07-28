@@ -10,6 +10,7 @@
 #include <SDL_timer.h>
 
 #include "libcutils/logger.h"
+#include "libcutils/util_makros.h"
 
 static SDL_Color g_color_black  = {0, 0 , 0, 255};
 //static SDL_Color     screen->font_bg  = {255, 255, 255, 255};
@@ -19,6 +20,7 @@ static SDL_Color g_color_black  = {0, 0 , 0, 255};
 //#define FONT_PATH "../resources/fonts/martius-font/Martius-LV9L4.ttf"
 //#define FONT_PATH "../resources/fonts/xolonium-font/XoloniumBold-xKZO.ttf"
 #define FONT_PATH "../resources/fonts/pasti-font/PastiOblique-7B0wK.otf"
+//#define FONT_PATH "../resources/fonts/poppins/Poppins-ExtraBold.ttf"
 
 
 
@@ -26,7 +28,7 @@ static SDL_Color g_color_black  = {0, 0 , 0, 255};
 #define STATUS_BOX_HEIGHT   50
 #define Y_OFFSET_STATUS_MSG (SCREEN_LOGICAL_HEIGHT-SCREEN_BORDER_WIDTH-STATUS_BOX_HEIGHT)
 
-
+#define TEXT_BORDER 10
 
 void screen_set_color(struct Screen *screen, enum Screen_Color color)
 {
@@ -96,6 +98,51 @@ void screen_draw_text(struct Screen *screen, int x, int y, int font_size, const 
 		.w = tmp_surface->w,
 		.h = tmp_surface->h
 	};
+
+	SDL_FreeSurface(tmp_surface);
+	SDL_RenderCopy(screen->renderer, texture, NULL, &text_rect);
+	SDL_DestroyTexture(texture);
+}
+
+void screen_draw_text_boxed(struct Screen *screen, int x, int y, int font_size, int min_width, const char *fmt, ...)
+{
+	if ( fmt == NULL || strlen(fmt) == 0) {
+		return;
+	}
+
+	char buffer[1024];
+
+	va_list arg_list;
+	va_start(arg_list, fmt);
+	vsnprintf(buffer, sizeof(buffer), fmt, arg_list);
+
+
+	TTF_SetFontSize(screen->font, font_size);
+
+	SDL_Surface *tmp_surface = TTF_RenderText_Blended(
+			screen->font,
+			buffer,
+			g_color_black
+			);
+
+	SDL_Texture *texture = SDL_CreateTextureFromSurface(
+			screen->renderer,
+			tmp_surface);
+
+	SDL_Rect text_rect = {
+		.x = x,
+		.y = y,
+		.w = tmp_surface->w,
+		.h = tmp_surface->h
+	};
+
+	SDL_Rect outlineRect = {
+		.x = x-TEXT_BORDER, 
+		.y = y-TEXT_BORDER, 
+		.w = MIN(min_width, text_rect.w+2*TEXT_BORDER),
+		.h = text_rect.h+2*TEXT_BORDER
+	}; 
+	SDL_RenderDrawRect(screen->renderer, &outlineRect);
 
 	SDL_FreeSurface(tmp_surface);
 	SDL_RenderCopy(screen->renderer, texture, NULL, &text_rect);
@@ -213,7 +260,7 @@ Result screen_init(struct Screen *screen, int width, int height)
 			SDL_WINDOWPOS_UNDEFINED,
 			SDL_WINDOWPOS_UNDEFINED,
 			width, height,
-			SDL_WINDOW_FULLSCREEN_DESKTOP);
+			SDL_WINDOW_SHOWN);
 	if(!screen->window) {
 		return result_make(false, "Window could not be created!\n"
 				"SDL_Error: %s\n", SDL_GetError());
@@ -297,14 +344,37 @@ void screen_rendering_stop(struct Screen *screen)
 	SDL_Delay((uint32_t)delta);
 }
 
+char screen_key_numeric_as_char(enum Screen_Key key)
+{
+	switch(key) {
+		case DKEY_0: return '0';
+		case DKEY_1: return '1';
+		case DKEY_2: return '2';
+		case DKEY_3: return '3';
+		case DKEY_4: return '4';
+		case DKEY_5: return '5';
+		case DKEY_6: return '6';
+		case DKEY_7: return '7';
+		case DKEY_8: return '8';
+		case DKEY_9: return '9';
+		default    : return '\0';
+	}
+}
 
 
-
-
-
-
-
-
-
-
-
+int screen_key_numeric_value(enum Screen_Key key)
+{
+	switch(key) {
+		case DKEY_0: return 0;
+		case DKEY_1: return 1;
+		case DKEY_2: return 2;
+		case DKEY_3: return 3;
+		case DKEY_4: return 4;
+		case DKEY_5: return 5;
+		case DKEY_6: return 6;
+		case DKEY_7: return 7;
+		case DKEY_8: return 8;
+		case DKEY_9: return 9;
+		default    : return -1;
+	}
+}

@@ -73,7 +73,8 @@ enum Screen_Color {
 };
 
 
-
+char screen_key_numeric_as_char(enum Screen_Key key);
+int screen_key_numeric_value(enum Screen_Key key);
 
 Result screen_init(struct Screen *screen, int width, int height);
 void screen_destroy(struct Screen *screen);
@@ -84,6 +85,7 @@ void screen_set_color(struct Screen *screen, enum Screen_Color color);
 void screen_draw_header(struct Screen *screen);
 void screen_draw_status(struct Screen *screen);
 void screen_draw_text(struct Screen *screen, int x, int y, int font_size, const char *fmt, ...);
+void screen_draw_text_boxed(struct Screen *screen, int x, int y, int font_size, int min_width, const char *fmt, ...);
 
 void screen_draw_option(
 	struct Screen *screen,

@@ -1,9 +1,10 @@
 #include "game_x01_screen.h"
 
+#include "darts.h"
 #include "game_x01.h"
+#include "player.h"
 #include "screen.h"
 #include "screen_utils.h"
-#include "darts.h"
 
 #include "libcutils/util_makros.h"
 
@@ -14,7 +15,6 @@ enum Game_Status {
 };
 
 static enum Game_Status g_status = GAME_STATUS_CONFIGURING;
-
 
 
 #define Y_OFFSET_HEADER     SCREEN_BORDER_WIDTH
@@ -34,17 +34,19 @@ static void screen_show_players(struct Screen *screen, struct Match *match)
 
 		const int x = (1+i)*SCREEN_BORDER_WIDTH + (i*PLAYER_BOX_SIZE);
 		const int y = Y_OFFSET_PLAYER;
+		int player_score = player->score;
 
 		SDL_Rect outlineRect = {x, y, PLAYER_BOX_SIZE, PLAYER_BOX_SIZE}; // x, y, width, height
 		if ((int) i == match->player_list.index_active_player) {
 			screen_set_color(screen, SCREEN_COLOR_GREY);;
 			SDL_RenderFillRect(screen->renderer, &outlineRect);
+			player_score -= player_get_score_from_current_turn(player);
 		}
 		screen_set_color(screen, SCREEN_COLOR_BLACK);
 		SDL_RenderDrawRect(screen->renderer, &outlineRect);
 
 		screen_draw_text(screen, x+10, y+10,  SCREEN_FONT_SIZE_S ,  player->name);
-		screen_draw_text(screen, x+10, y+50,  SCREEN_FONT_SIZE_XL, "%d", player->score);
+		screen_draw_text(screen, x+10, y+50,  SCREEN_FONT_SIZE_XL, "%d", player_score);
 		screen_draw_text(screen, x+10, y+120, SCREEN_FONT_SIZE_XS, "legs: %d", player->legs_won);
 	}
 }
@@ -83,9 +85,6 @@ static void screen_show_turn(struct Screen *screen, struct Match *match)
 				field_type_as_char(dart->field_type),
 				dart->field_value);
 		}
-		else if (dart->field_value == 0) {
-			screen_draw_text(screen, x, y-3, SCREEN_FONT_SIZE_XL, "MISS");
-		}
 
 	}
 
@@ -106,38 +105,58 @@ static void playing_set_header(struct Screen *screen, struct Match *match)
 			match->round, match->legs_for_win);
 }
 
-static void playing_next_turn(struct Match *match)
+static void playing_screen_next_step(struct Screen *screen, struct Match *match)
 {
 	struct Player *active_player = player_list_get_active_player(&match->player_list);
 
-	// TODO: check if player has already overshoot and if input is valid
+	if (!dart_hit_is_valid_input(player_get_current_dart_throw(active_player))) {
+		game_screen_set_status(screen, "Entered value is not valid!");
+		return;
+	}
+
+	enum X01_Result res = game_x01_register_dart_throw(active_player);
+
+	switch (res) {
+		case X01_RESULT_CHECKOUT_NOT_SATISFIED: // fallthrough
+		case X01_RESULT_PLAYER_OVERSHOOT:
+			player_clear_dart_throws(active_player);
+			player_list_select_next(&match->player_list);
+			active_player = player_list_get_active_player(&match->player_list);
+			player_clear_dart_throws(active_player);
+			return;
+			break;
+		case X01_RESULT_PLAYER_WON:
+			// TODO
+			break;
+		case X01_RESULT_CONTINUE:
+
+
+	}
+
 
 	bool has_another_throw = player_next_dart_throw(active_player);
 
 	if (!has_another_throw) {
-		int score = player_get_score_from_turn(&active_player->turn);
+		int score = player_get_score_from_current_turn(active_player);
 
-		active_player->score += score;
+		active_player->score -= score;
 
 		player_list_select_next(&match->player_list);
 		active_player = player_list_get_active_player(&match->player_list);
 		player_clear_dart_throws(active_player);
-
-		// TODO: remove me, just for demo
-		active_player->turn.dart[0].field_type  = DARTS_SINGLE;
-		active_player->turn.dart[0].field_value = 10;
-
-		active_player->turn.dart[1].field_type  = DARTS_DOUBLE;
-		active_player->turn.dart[1].field_value = 15;
-
-		active_player->turn.dart[2].field_type  = DARTS_TRIPPLE;
-		active_player->turn.dart[2].field_value = 20;
 	}
 }
 
 static void playing_undo_turn(struct Match *match)
 {
 	struct Player *active_player = player_list_get_active_player(&match->player_list);
+
+	struct Dart_Hit *active_turn = player_get_current_dart_throw(active_player);
+
+	if (active_turn->field_value > 0) {
+		active_turn->field_value /= 10;
+		return;
+	}
 
 	bool has_another_throw = player_previous_dart_throw(active_player);
 
@@ -149,19 +168,42 @@ static void playing_undo_turn(struct Match *match)
 	}
 }
 
+static void handle_score_input(struct Screen *screen, struct Match *match)
+{
+	struct Player *active_player = player_list_get_active_player(&match->player_list);
+	struct Dart_Hit *current_throw = player_get_current_dart_throw(active_player);
+
+	if (screen->key_pressed == DKEY_DIVIDE) {
+		dart_hit_toggle_field_type(current_throw, DARTS_DOUBLE);
+	}
+	else if (screen->key_pressed == DKEY_MULTIPLY) {
+		dart_hit_toggle_field_type(current_throw, DARTS_TRIPPLE);
+	}
+	else {
+		int key_val = screen_key_numeric_value(screen->key_pressed);
+
+		if (key_val < 0) return;
+
+		if (current_throw->field_value < 0) {
+			current_throw->field_value = key_val;
+		}
+		else if (current_throw->field_value < 10) {
+			current_throw->field_value *= 10;
+			current_throw->field_value += key_val;
+		}
+	}
+}
+
 void screen_play_game_x01_refresh(struct Screen *screen, struct Match *match)
 {
-	//if (screen->key_pressed == DKEY_8) {
-	//	line_cursor_up(&g_chooser_bundle.cursor);
-	//}
-	//else if (screen->key_pressed == DKEY_2) {
-	//	line_cursor_down(&g_chooser_bundle.cursor);
-	//}
 	if (screen->key_pressed == DKEY_MINUS) {
 		playing_undo_turn(match);
 	}
 	else if (screen->key_pressed == DKEY_ENTER) {
-		playing_next_turn(match);
+		playing_screen_next_step(screen, match);
+	}
+	else {
+		handle_score_input(screen, match);
 	}
 
 	playing_set_header(screen, match);
@@ -171,8 +213,15 @@ void screen_play_game_x01_refresh(struct Screen *screen, struct Match *match)
 
 void screen_play_game_x01_on_enter(struct Screen *screen, struct Match *match)
 {
-	(void) screen;
-	(void) match;
+	struct Game_X01 *game = game_x01_get_instance();
+
+	for( size_t i=0; i < match->player_list.count; ++i) {
+		struct Player *player = &match->player_list.items[i];
+		player->score = game_x01_get_start_score_as_int(game);
+		player_clear_dart_throws(player);
+	}
+
+	game_screen_set_status(screen, "Game On!");
 }
 
 void screen_play_game_x01_on_exit(struct Screen *screen, struct Match *match)

@@ -31,6 +31,12 @@ struct Chooser_Bundle {
 	size_t       chooser_count;
 };
 
+struct Score_Input {
+	char value[4];
+};
+
+void score_input_append(struct Score_Input *input, char value);
+bool score_input_drop_last(struct Score_Input *input);
 
 void line_cursor_up(Line_Cursor *cursor);
 void line_cursor_down(Line_Cursor *cursor);
