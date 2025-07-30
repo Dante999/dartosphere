@@ -37,8 +37,12 @@ void screen_set_color(struct Screen *screen, enum Screen_Color color)
 		SDL_SetRenderDrawColor(screen->renderer, 0, 0, 0, 255);
 		break;
 	case SCREEN_COLOR_GREY:
-		SDL_SetRenderDrawColor(screen->renderer, 210, 210, 210, 255);
+		//SDL_SetRenderDrawColor(screen->renderer, 210, 210, 210, 255);
+		// green
+		//SDL_SetRenderDrawColor(screen->renderer, 90, 230, 60, 255);
+		SDL_SetRenderDrawColor(screen->renderer, 180, 250, 160, 255);
 		break;
+
 	}
 }
 
@@ -104,7 +108,7 @@ void screen_draw_text(struct Screen *screen, int x, int y, int font_size, const 
 	SDL_DestroyTexture(texture);
 }
 
-void screen_draw_text_boxed(struct Screen *screen, int x, int y, int font_size, int min_width, const char *fmt, ...)
+void screen_draw_text_boxed(struct Screen *screen, int x, int y, int font_size, int min_width, bool is_selected, const char *fmt, ...)
 {
 	if ( fmt == NULL || strlen(fmt) == 0) {
 		return;
@@ -136,12 +140,21 @@ void screen_draw_text_boxed(struct Screen *screen, int x, int y, int font_size, 
 		.h = tmp_surface->h
 	};
 
+	const int text_width = text_rect.w+2*TEXT_BORDER;
+
 	SDL_Rect outlineRect = {
 		.x = x-TEXT_BORDER, 
 		.y = y-TEXT_BORDER, 
-		.w = MIN(min_width, text_rect.w+2*TEXT_BORDER),
+		.w = MAX(min_width, text_width), // pick greater one
 		.h = text_rect.h+2*TEXT_BORDER
 	}; 
+
+	if (is_selected) {
+		screen_set_color(screen, SCREEN_COLOR_GREY);
+		SDL_RenderFillRect(screen->renderer, &outlineRect);
+	}
+
+	screen_set_color(screen, SCREEN_COLOR_BLACK);
 	SDL_RenderDrawRect(screen->renderer, &outlineRect);
 
 	SDL_FreeSurface(tmp_surface);
@@ -220,15 +233,6 @@ void screen_draw_option(
 	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_L, "%s", name);
 	x += name_width;
 
-	SDL_Rect outlineRect = {x-5, y-5, value_width, CHOOSER_HEIGHT}; // x, y, width, height
-	if (is_selected) {
-		screen_set_color(screen, SCREEN_COLOR_GREY);;
-		SDL_RenderFillRect(screen->renderer, &outlineRect);
-	}
-
-	screen_set_color(screen, SCREEN_COLOR_BLACK);;
-	SDL_RenderDrawRect(screen->renderer, &outlineRect);
-
 	char buffer[1024];
 
 	va_list arg_list;
@@ -236,7 +240,7 @@ void screen_draw_option(
 	vsnprintf(buffer, sizeof(buffer), fmt_value, arg_list);
 	va_end(arg_list);
 
-	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_L, "%s", buffer);
+	screen_draw_text_boxed(screen, x, y, SCREEN_FONT_SIZE_L, value_width, is_selected, "%s", buffer);
 
 }
 

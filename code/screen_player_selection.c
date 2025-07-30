@@ -70,19 +70,12 @@ static void screen_show_players(struct Screen *screen, struct Match *match)
 		const struct Player *player = &match->player_list.items[i];
 
 		//const int x = (1+i)*SCREEN_BORDER_WIDTH + (i*PLAYER_BOX_SIZE);
-		const int x = SCREEN_BORDER_WIDTH;
-		int y = Y_OFFSET_PLAYER_NAMES + (i*(BOX_PLAYER_NAME_HEIGHT+5));
+		const int x = SCREEN_BORDER_WIDTH*2;
+		int y = Y_OFFSET_PLAYER_NAMES + (i*(BOX_PLAYER_NAME_HEIGHT+10));
 
-		SDL_Rect outlineRect = {x+TEXT_OFFSET, y+TEXT_OFFSET, BOX_PLAYER_NAME_WIDTH, BOX_PLAYER_NAME_HEIGHT}; // x, y, width, height
+		bool is_selected = (g_line_cursor.index == (int)(i+LINE_INDEX_PLAYER_AMOUNT+1));
 
-		if (g_line_cursor.index == (int)(i+LINE_INDEX_PLAYER_AMOUNT+1)) {
-			screen_set_color(screen, SCREEN_COLOR_GREY);;
-			SDL_RenderFillRect(screen->renderer, &outlineRect);
-		}
-		screen_set_color(screen, SCREEN_COLOR_BLACK);
-		SDL_RenderDrawRect(screen->renderer, &outlineRect);
-
-		screen_draw_text(screen, x, y,  TEXT_FONT_SIZE,  player->name);
+		screen_draw_text_boxed(screen, x, y, TEXT_FONT_SIZE, BOX_PLAYER_NAME_WIDTH, is_selected, player->name);
 	}
 }
 

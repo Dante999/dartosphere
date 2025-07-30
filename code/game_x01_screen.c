@@ -228,7 +228,7 @@ static void screen_play_game_x01_player_won_match(struct Screen *screen, struct 
 	struct Player *player = player_list_get_active_player(&match->player_list);
 
 	screen_draw_text_boxed(screen, SCREEN_BORDER_WIDTH, SCREEN_LOGICAL_HEIGHT/2, SCREEN_FONT_SIZE_XL, 0,
-			"%s won this match!", player->name);
+			true, "%s won this match!", player->name);
 
 	if (screen->key_pressed == DKEY_ENTER) {
 		game_screen_previous(screen, match);
@@ -242,7 +242,7 @@ static void screen_play_game_x01_player_won_leg(struct Screen *screen, struct Ma
 	struct Player *player = player_list_get_active_player(&match->player_list);
 
 	screen_draw_text_boxed(screen, SCREEN_BORDER_WIDTH, SCREEN_LOGICAL_HEIGHT/2, SCREEN_FONT_SIZE_XL, 0,
-			"%s won this leg!", player->name);
+			true, "%s won this leg!", player->name);
 
 	if (screen->key_pressed == DKEY_ENTER) {
 
