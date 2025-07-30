@@ -46,14 +46,20 @@ int game_x01_get_start_score_as_int(struct Game_X01 *game)
 enum X01_Result game_x01_register_dart_throw(struct Player *player)
 {
 	struct Dart_Hit *hit = player_get_current_dart_throw(player);
-	
-	int hit_score = dart_hit_get_points(hit);
-	int score_delta = player->score - hit_score;
+
+	const int score_turn = player_get_score_from_current_turn(player);
+	const int score_delta = player->score - score_turn;
 
 	if (score_delta < 0) {
 		return X01_RESULT_PLAYER_OVERSHOOT;
 	}
-	if (score_delta > 0) {
+	if (score_delta > 0 && g_game.check_out == X01_MODE_STRAIGHT) {
+		return X01_RESULT_CONTINUE;
+	}
+	if (score_delta >= 2 && g_game.check_out == X01_MODE_DOUBLE) {
+		return X01_RESULT_CONTINUE;
+	}
+	if (score_delta >= 3 && g_game.check_out == X01_MODE_MASTER) {
 		return X01_RESULT_CONTINUE;
 	}
 

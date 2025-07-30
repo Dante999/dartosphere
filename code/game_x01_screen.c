@@ -7,14 +7,16 @@
 #include "screen_utils.h"
 
 #include "libcutils/util_makros.h"
+#include "libcutils/logger.h"
 
 
 enum Game_Status {
-	GAME_STATUS_CONFIGURING,
-	GAME_STATUS_PLAYING
+	GAME_STATUS_PLAYING,
+	GAME_STATUS_PLAYER_WON_LEG,
+	GAME_STATUS_PLAYER_WON_MATCH
 };
 
-static enum Game_Status g_status = GAME_STATUS_CONFIGURING;
+static enum Game_Status g_status = GAME_STATUS_PLAYING;
 
 
 #define Y_OFFSET_HEADER     SCREEN_BORDER_WIDTH
@@ -71,8 +73,9 @@ static void screen_show_turn(struct Screen *screen, struct Match *match)
 
 
 		SDL_Rect outlineRect = {x-10, y-8, TURN_BOX_WIDTH, TURN_BOX_HEIGHT}; // x, y, width, height
+		bool is_active_throw = ((int) i == turn->index_active_dart);
 
-		if ((int) i == turn->index_active_dart) {
+		if (is_active_throw) {
 			screen_set_color(screen, SCREEN_COLOR_GREY);
 			SDL_RenderFillRect(screen->renderer, &outlineRect);
 		}
@@ -82,6 +85,11 @@ static void screen_show_turn(struct Screen *screen, struct Match *match)
 
 		if (dart->field_value != -1) {
 			screen_draw_text(screen, x, y-3, SCREEN_FONT_SIZE_XL, "%c%d",
+				field_type_as_char(dart->field_type),
+				dart->field_value);
+		}
+		else if (is_active_throw) {
+			screen_draw_text(screen, x, y-3, SCREEN_FONT_SIZE_XL, "%c-",
 				field_type_as_char(dart->field_type),
 				dart->field_value);
 		}
@@ -113,21 +121,35 @@ static void playing_screen_next_step(struct Screen *screen, struct Match *match)
 		game_screen_set_status(screen, "Entered value is not valid!");
 		return;
 	}
+	else {
+		game_screen_set_status(screen, "");
+	}
 
 	enum X01_Result res = game_x01_register_dart_throw(active_player);
 
 	switch (res) {
 		case X01_RESULT_CHECKOUT_NOT_SATISFIED: // fallthrough
-		case X01_RESULT_PLAYER_OVERSHOOT:
+			log_info("%s finished but checkout is not satisfied!\n", active_player->name);
+			game_screen_set_status(screen, "%s: checkout rule not satisfied!", active_player->name);
 			player_clear_dart_throws(active_player);
 			player_list_select_next(&match->player_list);
 			active_player = player_list_get_active_player(&match->player_list);
 			player_clear_dart_throws(active_player);
 			return;
-			break;
+		case X01_RESULT_PLAYER_OVERSHOOT:
+			log_info("%s did overshoot!\n", active_player->name);
+			game_screen_set_status(screen, "%s overshoot!", active_player->name);
+			player_clear_dart_throws(active_player);
+			player_list_select_next(&match->player_list);
+			active_player = player_list_get_active_player(&match->player_list);
+			player_clear_dart_throws(active_player);
+			return;
 		case X01_RESULT_PLAYER_WON:
-			// TODO
-			break;
+			log_info("%s won the leg!\n", active_player->name);
+			game_screen_set_status(screen, "%s won!", active_player->name);
+			active_player->legs_won++;
+			g_status = GAME_STATUS_PLAYER_WON_LEG;
+			return;
 		case X01_RESULT_CONTINUE:
 
 
@@ -136,7 +158,11 @@ static void playing_screen_next_step(struct Screen *screen, struct Match *match)
 
 	bool has_another_throw = player_next_dart_throw(active_player);
 
-	if (!has_another_throw) {
+	if (has_another_throw) {
+		log_info("%s has another throw\n", active_player->name);
+	}
+	else {
+		log_info("%s finished his turn\n", active_player->name);
 		int score = player_get_score_from_current_turn(active_player);
 
 		active_player->score -= score;
@@ -144,6 +170,7 @@ static void playing_screen_next_step(struct Screen *screen, struct Match *match)
 		player_list_select_next(&match->player_list);
 		active_player = player_list_get_active_player(&match->player_list);
 		player_clear_dart_throws(active_player);
+		log_info("%s starts his turn\n", active_player->name);
 	}
 }
 
@@ -194,7 +221,42 @@ static void handle_score_input(struct Screen *screen, struct Match *match)
 	}
 }
 
-void screen_play_game_x01_refresh(struct Screen *screen, struct Match *match)
+static void screen_play_game_x01_player_won_match(struct Screen *screen, struct Match *match)
+{
+	playing_set_header(screen, match);
+
+	struct Player *player = player_list_get_active_player(&match->player_list);
+
+	screen_draw_text_boxed(screen, SCREEN_BORDER_WIDTH, SCREEN_LOGICAL_HEIGHT/2, SCREEN_FONT_SIZE_XL, 0,
+			"%s won this match!", player->name);
+
+	if (screen->key_pressed == DKEY_ENTER) {
+		game_screen_previous(screen, match);
+	}
+}
+
+static void screen_play_game_x01_player_won_leg(struct Screen *screen, struct Match *match)
+{
+	playing_set_header(screen, match);
+
+	struct Player *player = player_list_get_active_player(&match->player_list);
+
+	screen_draw_text_boxed(screen, SCREEN_BORDER_WIDTH, SCREEN_LOGICAL_HEIGHT/2, SCREEN_FONT_SIZE_XL, 0,
+			"%s won this leg!", player->name);
+
+	if (screen->key_pressed == DKEY_ENTER) {
+
+		if (player->legs_won == match->legs_for_win) {
+			g_status = GAME_STATUS_PLAYER_WON_MATCH;
+		}
+		else {
+			g_status = GAME_STATUS_PLAYING;
+			screen_play_game_x01_on_enter(screen, match);
+		}
+	}
+}
+
+static void screen_play_game_x01_game_on(struct Screen *screen, struct Match *match)
 {
 	if (screen->key_pressed == DKEY_MINUS) {
 		playing_undo_turn(match);
@@ -211,6 +273,23 @@ void screen_play_game_x01_refresh(struct Screen *screen, struct Match *match)
 	screen_show_turn(screen, match);
 }
 
+void screen_play_game_x01_refresh(struct Screen *screen, struct Match *match)
+{
+	switch(g_status) {
+		case GAME_STATUS_PLAYING:
+			screen_play_game_x01_game_on(screen, match);
+			break;
+		case GAME_STATUS_PLAYER_WON_LEG:
+			screen_play_game_x01_player_won_leg(screen, match);
+			break;
+		case GAME_STATUS_PLAYER_WON_MATCH:
+			screen_play_game_x01_player_won_match(screen, match);
+			break;
+
+
+	}
+}
+
 void screen_play_game_x01_on_enter(struct Screen *screen, struct Match *match)
 {
 	struct Game_X01 *game = game_x01_get_instance();
@@ -221,6 +300,7 @@ void screen_play_game_x01_on_enter(struct Screen *screen, struct Match *match)
 		player_clear_dart_throws(player);
 	}
 
+	g_status = GAME_STATUS_PLAYING;
 	game_screen_set_status(screen, "Game On!");
 }
 
@@ -324,9 +404,6 @@ void screen_configure_game_x01_refresh(struct Screen *screen, struct Match *matc
 
 	game_screen_set_header(screen, "X01: Configuration", "", "");
 	update_and_draw_chooser(screen, &g_chooser_bundle);
-
-	if (screen->key_pressed == DKEY_ENTER) g_status = GAME_STATUS_PLAYING;
-
 }
 
 void screen_configure_game_x01_on_enter(struct Screen *screen, struct Match *match)
@@ -349,6 +426,8 @@ void screen_configure_game_x01_on_exit(struct Screen *screen, struct Match *matc
 	game->start_score = get_chooser_from_bundle(&g_chooser_bundle, LINE_INDEX_SCORE)->value;
 	game->check_in    = get_chooser_from_bundle(&g_chooser_bundle, LINE_INDEX_CHECK_IN)->value;
 	game->check_out   = get_chooser_from_bundle(&g_chooser_bundle, LINE_INDEX_CHECK_OUT)->value;
+
+	player_list_reset_wins(&match->player_list);
 }
 
 

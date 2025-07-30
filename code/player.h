@@ -45,6 +45,7 @@ void player_list_select_next(struct Player_List *players);
 void player_list_select_previous(struct Player_List *players);
 void player_list_add_player(struct Player_List *players);
 void player_list_remove_player(struct Player_List *players);
+void player_list_reset_wins(struct Player_List *players);
 
 struct Player *player_list_get_active_player(struct Player_List *players);
 struct Dart_Hit *player_get_current_dart_throw(struct Player *player);

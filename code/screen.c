@@ -115,7 +115,7 @@ void screen_draw_text_boxed(struct Screen *screen, int x, int y, int font_size, 
 	va_list arg_list;
 	va_start(arg_list, fmt);
 	vsnprintf(buffer, sizeof(buffer), fmt, arg_list);
-
+	va_end(arg_list);
 
 	TTF_SetFontSize(screen->font, font_size);
 
@@ -234,6 +234,8 @@ void screen_draw_option(
 	va_list arg_list;
 	va_start(arg_list, fmt_value);
 	vsnprintf(buffer, sizeof(buffer), fmt_value, arg_list);
+	va_end(arg_list);
+
 	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_L, "%s", buffer);
 
 }
@@ -260,7 +262,7 @@ Result screen_init(struct Screen *screen, int width, int height)
 			SDL_WINDOWPOS_UNDEFINED,
 			SDL_WINDOWPOS_UNDEFINED,
 			width, height,
-			SDL_WINDOW_SHOWN);
+			SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
 	if(!screen->window) {
 		return result_make(false, "Window could not be created!\n"
 				"SDL_Error: %s\n", SDL_GetError());

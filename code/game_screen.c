@@ -122,7 +122,10 @@ void game_screen_set_header(struct Screen *screen, const char *first_line, const
 	strncpy(screen->header.line2, third_line, sizeof(screen->header.line2));
 }
 
-void game_screen_set_status(struct Screen *screen, const char *status)
+void game_screen_set_status(struct Screen *screen, const char *fmt, ...)
 {
-	strncpy(screen->status, status, sizeof(screen->status));
+	va_list arg_list;
+	va_start(arg_list, fmt);
+	vsnprintf(screen->status, sizeof(screen->status), fmt, arg_list);
+	va_end(arg_list);
 }

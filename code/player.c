@@ -100,6 +100,12 @@ struct Player *player_list_get_active_player(struct Player_List *players)
 	return &players->items[players->index_active_player];
 }
 
+void player_list_reset_wins(struct Player_List *players)
+{
+	for (size_t i=0; i < ARRAY_SIZE(players->items); ++i) {
+		players->items[i].legs_won = 0;
+	}
+}
 
 int player_get_score_from_current_turn(struct Player *player)
 {
@@ -144,3 +150,5 @@ int dart_hit_get_points(struct Dart_Hit *hit)
 {
 	return get_field_type_multiplier(hit->field_type) * hit->field_value;
 }
+
+

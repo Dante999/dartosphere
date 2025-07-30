@@ -50,7 +50,7 @@ void game_screen_refresh(struct Screen *screen, struct Match *match);
 void game_screen_previous(struct Screen *screen, struct Match *match);
 void game_screen_next(struct Screen *screen, struct Match *match);
 void game_screen_set_header(struct Screen *screen, const char *first_line, const char *second_line, const char *third_line);
-void game_screen_set_status(struct Screen *screen, const char *status);
+void game_screen_set_status(struct Screen *screen, const char *fmt, ...);
 
 struct Game_Screen *game_screen_get_current(struct Screen *screen);
 
