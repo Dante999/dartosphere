@@ -12,8 +12,7 @@
 #include "libcutils/logger.h"
 #include "libcutils/util_makros.h"
 
-static SDL_Color g_color_black  = {0, 0 , 0, 255};
-//static SDL_Color     screen->font_bg  = {255, 255, 255, 255};
+static SDL_Color g_color_black = {0, 0 , 0, 255};
 
 //#define FONT_PATH "../resources/fonts/share-tech-mono/ShareTechMono-Regular.ttf"
 //#define FONT_PATH "../resources/fonts/Breaked-51015334/Breaked.ttf"
@@ -260,13 +259,17 @@ Result screen_init(struct Screen *screen, int width, int height)
 		return result_make(false, "SDL can not disable compositor bypass!");
 	}
 #endif
+	if(!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "best"))
+	{
+		return result_make(false, "SDL can not set render scale quality!");
+	}
 
 	// Create window
 	screen->window = SDL_CreateWindow("Dartosphere",
 			SDL_WINDOWPOS_UNDEFINED,
 			SDL_WINDOWPOS_UNDEFINED,
 			width, height,
-			SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+			SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN_DESKTOP);
 	if(!screen->window) {
 		return result_make(false, "Window could not be created!\n"
 				"SDL_Error: %s\n", SDL_GetError());

@@ -47,7 +47,7 @@ static void screen_show_players(struct Screen *screen, struct Match *match)
 		screen_set_color(screen, SCREEN_COLOR_BLACK);
 		SDL_RenderDrawRect(screen->renderer, &outlineRect);
 
-		screen_draw_text(screen, x+10, y+10,  SCREEN_FONT_SIZE_S ,  player->name);
+		screen_draw_text(screen, x+10, y+10,  SCREEN_FONT_SIZE_M ,  player->name);
 		screen_draw_text(screen, x+10, y+50,  SCREEN_FONT_SIZE_XL, "%d", player_score);
 		screen_draw_text(screen, x+10, y+120, SCREEN_FONT_SIZE_XS, "legs: %d", player->legs_won);
 	}
