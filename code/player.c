@@ -140,9 +140,9 @@ void dart_hit_toggle_field_type(struct Dart_Hit *hit, enum Field_Type type)
 
 bool dart_hit_is_valid_input(struct Dart_Hit *hit)
 {
-	return (hit->field_value <= 20) || 
-		(hit->field_value == 25) || 
-		(hit->field_value == 50);
+	return (hit->field_value >= 0 && hit->field_value <= 20) ||
+		(hit->field_value == 25 && hit->field_type == DARTS_SINGLE) ||
+		(hit->field_value == 50 && hit->field_type == DARTS_SINGLE);
 }
 
 

@@ -182,6 +182,10 @@ static void playing_undo_turn(struct Match *match)
 
 	if (active_turn->field_value > 0) {
 		active_turn->field_value /= 10;
+
+		if (active_turn->field_value == 0) {
+			active_turn->field_value = DART_FIELD_VALUE_UNSET;
+		}
 		return;
 	}
 
