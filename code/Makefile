@@ -10,6 +10,7 @@ all:
 		screen.c \
 		player.c \
 		game_x01.c \
+		config.c \
 		game_x01_screen.c \
 		game_screen.c \
 		screen_welcome.c \

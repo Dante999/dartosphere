@@ -4,12 +4,13 @@
 #define LOGGER_IMPLEMENTATION
 #include "libcutils/logger.h"
 
+#include "config.h"
 #include "darts.h"
 #include "game_screen.h"
+#include "screen.h"
 
 #include <unistd.h>
 
-#include "screen.h"
 
 #define SCREEN_SCALE  1.0f
 #define SCREEN_WIDTH  800*SCREEN_SCALE
@@ -23,6 +24,7 @@
 int main(void)
 {
 	log_info("Application started!\n");
+	config_init();
 
 	struct Match match = {0};
 	match_init(&match);

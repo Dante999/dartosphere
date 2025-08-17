@@ -1,5 +1,7 @@
 #include "screen.h"
 
+#include "config.h"
+
 #include <unistd.h>
 #include <assert.h>
 
@@ -14,15 +16,6 @@
 
 static SDL_Color g_color_black = {0, 0 , 0, 255};
 
-//#define FONT_PATH "../resources/fonts/share-tech-mono/ShareTechMono-Regular.ttf"
-//#define FONT_PATH "../resources/fonts/Breaked-51015334/Breaked.ttf"
-//#define FONT_PATH "../resources/fonts/martius-font/Martius-LV9L4.ttf"
-//#define FONT_PATH "../resources/fonts/xolonium-font/XoloniumBold-xKZO.ttf"
-#define FONT_PATH "../resources/fonts/pasti-font/PastiOblique-7B0wK.otf"
-//#define FONT_PATH "../resources/fonts/poppins/Poppins-ExtraBold.ttf"
-
-
-
 #define STATUS_BOX_WIDTH    (SCREEN_LOGICAL_WIDTH-(2*SCREEN_BORDER_WIDTH))
 #define STATUS_BOX_HEIGHT   50
 #define Y_OFFSET_STATUS_MSG (SCREEN_LOGICAL_HEIGHT-SCREEN_BORDER_WIDTH-STATUS_BOX_HEIGHT)
@@ -31,17 +24,20 @@ static SDL_Color g_color_black = {0, 0 , 0, 255};
 
 void screen_set_color(struct Screen *screen, enum Screen_Color color)
 {
+	struct Color *ptr = NULL;
+
 	switch(color) {
-	case SCREEN_COLOR_BLACK:
-		SDL_SetRenderDrawColor(screen->renderer, 0, 0, 0, 255);
+	case SCREEN_COLOR_FONT:
+		ptr = &g_config.screen_color_font;
 		break;
-	case SCREEN_COLOR_GREY:
-		//SDL_SetRenderDrawColor(screen->renderer, 210, 210, 210, 255);
-		// green
-		//SDL_SetRenderDrawColor(screen->renderer, 90, 230, 60, 255);
-		SDL_SetRenderDrawColor(screen->renderer, 180, 250, 160, 255);
+	case SCREEN_COLOR_HIGHLIGHT:
+		ptr = &g_config.screen_color_highlight;
 		break;
 
+	}
+
+	if (ptr != NULL) {
+		SDL_SetRenderDrawColor(screen->renderer, ptr->r, ptr->g, ptr->b, ptr->a);
 	}
 }
 
@@ -149,11 +145,11 @@ void screen_draw_text_boxed(struct Screen *screen, int x, int y, int font_size, 
 	}; 
 
 	if (is_selected) {
-		screen_set_color(screen, SCREEN_COLOR_GREY);
+		screen_set_color(screen, SCREEN_COLOR_HIGHLIGHT);
 		SDL_RenderFillRect(screen->renderer, &outlineRect);
 	}
 
-	screen_set_color(screen, SCREEN_COLOR_BLACK);
+	screen_set_color(screen, SCREEN_COLOR_FONT);
 	SDL_RenderDrawRect(screen->renderer, &outlineRect);
 
 	SDL_FreeSurface(tmp_surface);
@@ -166,11 +162,11 @@ void screen_draw_status(struct Screen *screen)
 	const int x = SCREEN_BORDER_WIDTH;
 	const int y = Y_OFFSET_STATUS_MSG;
 
-	screen_set_color(screen, SCREEN_COLOR_BLACK);
+	screen_set_color(screen, SCREEN_COLOR_FONT);
 
 	SDL_Rect outlineRect = {x, y, STATUS_BOX_WIDTH, STATUS_BOX_HEIGHT}; // x, y, width, height
 	SDL_RenderDrawRect(screen->renderer, &outlineRect);
-	screen_draw_text(screen, x+5, y+5, SCREEN_FONT_SIZE_L, screen->status);
+	screen_draw_text(screen, x+5, y+5, g_config.screen_font_size_l, screen->status);
 }
 
 void screen_draw_header(struct Screen *screen)
@@ -179,13 +175,13 @@ void screen_draw_header(struct Screen *screen)
 	int       y = SCREEN_BORDER_WIDTH;;
 
 
-	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_L, screen->header.line0);
-	y+= SCREEN_FONT_SIZE_L+5;
+	screen_draw_text(screen, x, y, g_config.screen_font_size_l, screen->header.line0);
+	y+= g_config.screen_font_size_l+5;
 
-	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_S, screen->header.line1);
-	y+= SCREEN_FONT_SIZE_S+5;
+	screen_draw_text(screen, x, y, g_config.screen_font_size_s, screen->header.line1);
+	y+= g_config.screen_font_size_s+5;
 
-	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_M, screen->header.line2);
+	screen_draw_text(screen, x, y, g_config.screen_font_size_m, screen->header.line2);
 }
 
 
@@ -229,7 +225,7 @@ void screen_draw_option(
 	int x = SCREEN_BORDER_WIDTH;
 	int y = Y_OFFSET_CHOOSER + (y_index * 55);
 
-	screen_draw_text(screen, x, y, SCREEN_FONT_SIZE_L, "%s", name);
+	screen_draw_text(screen, x, y, g_config.screen_font_size_l, "%s", name);
 	x += name_width;
 
 	char buffer[1024];
@@ -239,7 +235,7 @@ void screen_draw_option(
 	vsnprintf(buffer, sizeof(buffer), fmt_value, arg_list);
 	va_end(arg_list);
 
-	screen_draw_text_boxed(screen, x, y, SCREEN_FONT_SIZE_L, value_width, is_selected, "%s", buffer);
+	screen_draw_text_boxed(screen, x, y, g_config.screen_font_size_l, value_width, is_selected, "%s", buffer);
 
 }
 
@@ -289,8 +285,9 @@ Result screen_init(struct Screen *screen, int width, int height)
 
 	SDL_RenderSetLogicalSize(screen->renderer, SCREEN_LOGICAL_WIDTH, SCREEN_LOGICAL_HEIGHT);
 
-
-	Result r = screen_load_ttf_font(screen, FONT_PATH);
+	char font_filepath[1024];
+	snprintf(font_filepath, sizeof(font_filepath), "%s/%s",  g_config.resources_dir, g_config.font_file);
+	Result r = screen_load_ttf_font(screen, font_filepath);
 	if (!r.success) {
 		//log_error("failed to load font: %s\n", r.msg);
 		return r;

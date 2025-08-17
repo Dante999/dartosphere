@@ -1,5 +1,6 @@
 #include "game_x01_screen.h"
 
+#include "config.h"
 #include "darts.h"
 #include "game_x01.h"
 #include "player.h"
@@ -40,16 +41,16 @@ static void screen_show_players(struct Screen *screen, struct Match *match)
 
 		SDL_Rect outlineRect = {x, y, PLAYER_BOX_SIZE, PLAYER_BOX_SIZE}; // x, y, width, height
 		if ((int) i == match->player_list.index_active_player) {
-			screen_set_color(screen, SCREEN_COLOR_GREY);;
+			screen_set_color(screen, SCREEN_COLOR_HIGHLIGHT);;
 			SDL_RenderFillRect(screen->renderer, &outlineRect);
 			player_score -= player_get_score_from_current_turn(player);
 		}
-		screen_set_color(screen, SCREEN_COLOR_BLACK);
+		screen_set_color(screen, SCREEN_COLOR_FONT);
 		SDL_RenderDrawRect(screen->renderer, &outlineRect);
 
-		screen_draw_text(screen, x+10, y+10,  SCREEN_FONT_SIZE_M ,  player->name);
-		screen_draw_text(screen, x+10, y+50,  SCREEN_FONT_SIZE_XL, "%d", player_score);
-		screen_draw_text(screen, x+10, y+120, SCREEN_FONT_SIZE_XS, "legs: %d", player->legs_won);
+		screen_draw_text(screen, x+10, y+10,  g_config.screen_font_size_m ,  player->name);
+		screen_draw_text(screen, x+10, y+50,  g_config.screen_font_size_xl, "%d", player_score);
+		screen_draw_text(screen, x+10, y+120, g_config.screen_font_size_xs, "legs: %d", player->legs_won);
 	}
 }
 
@@ -58,8 +59,8 @@ static void screen_show_players(struct Screen *screen, struct Match *match)
 
 static void screen_show_turn(struct Screen *screen, struct Match *match)
 {
-	screen_set_color(screen, SCREEN_COLOR_BLACK);
-	screen_draw_text(screen, SCREEN_BORDER_WIDTH, Y_OFFSET_TURN, SCREEN_FONT_SIZE_L, "Turn: ");
+	screen_set_color(screen, SCREEN_COLOR_FONT);
+	screen_draw_text(screen, SCREEN_BORDER_WIDTH, Y_OFFSET_TURN, g_config.screen_font_size_l, "Turn: ");
 
 	const int x_start = SCREEN_BORDER_WIDTH + 130;
 
@@ -76,20 +77,20 @@ static void screen_show_turn(struct Screen *screen, struct Match *match)
 		bool is_active_throw = ((int) i == turn->index_active_dart);
 
 		if (is_active_throw) {
-			screen_set_color(screen, SCREEN_COLOR_GREY);
+			screen_set_color(screen, SCREEN_COLOR_HIGHLIGHT);
 			SDL_RenderFillRect(screen->renderer, &outlineRect);
 		}
 
-		screen_set_color(screen, SCREEN_COLOR_BLACK);
+		screen_set_color(screen, SCREEN_COLOR_FONT);
 		SDL_RenderDrawRect(screen->renderer, &outlineRect);
 
 		if (dart->field_value != -1) {
-			screen_draw_text(screen, x, y-3, SCREEN_FONT_SIZE_XL, "%c%d",
+			screen_draw_text(screen, x, y-3, g_config.screen_font_size_xl, "%c%d",
 				field_type_as_char(dart->field_type),
 				dart->field_value);
 		}
 		else if (is_active_throw) {
-			screen_draw_text(screen, x, y-3, SCREEN_FONT_SIZE_XL, "%c-",
+			screen_draw_text(screen, x, y-3, g_config.screen_font_size_xl, "%c-",
 				field_type_as_char(dart->field_type),
 				dart->field_value);
 		}
@@ -151,8 +152,7 @@ static void playing_screen_next_step(struct Screen *screen, struct Match *match)
 			g_status = GAME_STATUS_PLAYER_WON_LEG;
 			return;
 		case X01_RESULT_CONTINUE:
-
-
+			break;
 	}
 
 
@@ -227,7 +227,7 @@ static void screen_play_game_x01_player_won_match(struct Screen *screen, struct 
 
 	struct Player *player = player_list_get_active_player(&match->player_list);
 
-	screen_draw_text_boxed(screen, SCREEN_BORDER_WIDTH, SCREEN_LOGICAL_HEIGHT/2, SCREEN_FONT_SIZE_XL, 0,
+	screen_draw_text_boxed(screen, SCREEN_BORDER_WIDTH, SCREEN_LOGICAL_HEIGHT/2, g_config.screen_font_size_xl, 0,
 			true, "%s won this match!", player->name);
 
 	if (screen->key_pressed == DKEY_ENTER) {
@@ -241,7 +241,7 @@ static void screen_play_game_x01_player_won_leg(struct Screen *screen, struct Ma
 
 	struct Player *player = player_list_get_active_player(&match->player_list);
 
-	screen_draw_text_boxed(screen, SCREEN_BORDER_WIDTH, SCREEN_LOGICAL_HEIGHT/2, SCREEN_FONT_SIZE_XL, 0,
+	screen_draw_text_boxed(screen, SCREEN_BORDER_WIDTH, SCREEN_LOGICAL_HEIGHT/2, g_config.screen_font_size_xl, 0,
 			true, "%s won this leg!", player->name);
 
 	if (screen->key_pressed == DKEY_ENTER) {

@@ -19,9 +19,10 @@ static struct Game_Mode g_game_modes[] = {
 		.screen_id = GAME_SCREEN_GAME_X01_CONFIGURE
 	},
 	{
-		.name = "Around the Clock", 
-		.description = "Hit all fields", 
-		.screen_id = GAME_SCREEN_UNDEFINED }
+		.name = "Around the Clock",
+		.description = "Hit all fields",
+		.screen_id = GAME_SCREEN_UNDEFINED
+	}
 };
 
 static struct Game_Screen g_game_screens[] = {

@@ -1,5 +1,6 @@
 #include "screen_player_selection.h"
 
+#include "config.h"
 #include "screen.h"
 #include "darts.h"
 #include "screen_utils.h"
@@ -10,7 +11,7 @@
 #define Y_OFFSET_PLAYER_NAMES    200
 #define Y_OFFSET_CONTINUE_BUTTON 500
 
-#define TEXT_FONT_SIZE    SCREEN_FONT_SIZE_L
+#define TEXT_FONT_SIZE            g_config.screen_font_size_l
 #define TEXT_OFFSET                -7
 #define BOX_PLAYER_COUNT_HEIGHT   50
 #define BOX_PLAYER_COUNT_WIDTH    50

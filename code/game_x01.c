@@ -68,11 +68,11 @@ enum X01_Result game_x01_register_dart_throw(struct Player *player)
 			return X01_RESULT_PLAYER_WON;
 
 		case X01_MODE_DOUBLE:
-			return (hit->field_type == DARTS_DOUBLE) 
+			return (hit->field_type == DARTS_DOUBLE)
 				? X01_RESULT_PLAYER_WON : X01_RESULT_CHECKOUT_NOT_SATISFIED;
 
 		case X01_MODE_MASTER:
-			return (hit->field_type == DARTS_DOUBLE || hit->field_type == DARTS_TRIPPLE) 
+			return (hit->field_type == DARTS_DOUBLE || hit->field_type == DARTS_TRIPPLE)
 				? X01_RESULT_PLAYER_WON : X01_RESULT_CHECKOUT_NOT_SATISFIED;
 
 		default:
