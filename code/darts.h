@@ -21,6 +21,7 @@ struct Match {
 	struct Player_List    player_list;
 	struct Game_Mode_List game_mode_list;
 	size_t legs_for_win;
+	size_t legs_played;
 	size_t round;
 };
 

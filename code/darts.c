@@ -20,6 +20,7 @@ void match_init(struct Match *match)
 	player_list_init(&match->player_list);
 
 	match->legs_for_win = DEFAULT_LEGS_FOR_WIN;
+	match->legs_played  = 0;
 	match->round        = 0;
 }
 

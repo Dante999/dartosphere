@@ -18,7 +18,7 @@ enum Game_Status {
 };
 
 static enum Game_Status g_status = GAME_STATUS_PLAYING;
-
+static int g_index_first_player  = -1;
 
 #define Y_OFFSET_HEADER     SCREEN_BORDER_WIDTH
 #define Y_OFFSET_PLAYER     120
@@ -110,8 +110,8 @@ static void playing_set_header(struct Screen *screen, struct Match *match)
 			game_x01_score_as_string(game->start_score),
 			game_x01_mode_as_string(game->check_in),
 			game_x01_mode_as_string(game->check_out));
-	snprintf(hf->line2, sizeof(hf->line2), "Round: %zu    Legs for win: %zu",
-			match->round, match->legs_for_win);
+	snprintf(hf->line2, sizeof(hf->line2), "Round: %zu    Legs played: %zu    Legs for win: %zu",
+			match->round, match->legs_played, match->legs_for_win);
 }
 
 static void playing_screen_next_step(struct Screen *screen, struct Match *match)
@@ -171,6 +171,10 @@ static void playing_screen_next_step(struct Screen *screen, struct Match *match)
 		active_player = player_list_get_active_player(&match->player_list);
 		player_clear_dart_throws(active_player);
 		log_info("%s starts his turn\n", active_player->name);
+
+		if (match->player_list.index_active_player == g_index_first_player) {
+			match->round++;
+		}
 	}
 }
 
@@ -196,6 +200,11 @@ static void playing_undo_turn(struct Match *match)
 		// round
 		player_list_select_previous(&match->player_list);
 		active_player = player_list_get_active_player(&match->player_list);
+
+		if (match->player_list.index_active_player == g_index_first_player &&
+			match->round > 0) {
+			match->round--;
+		}
 	}
 }
 
@@ -254,6 +263,8 @@ static void screen_play_game_x01_player_won_leg(struct Screen *screen, struct Ma
 			g_status = GAME_STATUS_PLAYER_WON_MATCH;
 		}
 		else {
+			match->legs_played++;
+			log_info("starting new leg\n");
 			g_status = GAME_STATUS_PLAYING;
 			screen_play_game_x01_on_enter(screen, match);
 		}
@@ -305,6 +316,12 @@ void screen_play_game_x01_on_enter(struct Screen *screen, struct Match *match)
 	}
 
 	g_status = GAME_STATUS_PLAYING;
+	log_info("old index of first player: %d\n", g_index_first_player);
+	g_index_first_player++;
+	g_index_first_player %= match->player_list.count;
+	log_info("new index of first player: %d\n", g_index_first_player);
+	match->player_list.index_active_player = g_index_first_player;
+	match->round = 0;
 	game_screen_set_status(screen, "Game On!");
 }
 
@@ -432,6 +449,8 @@ void screen_configure_game_x01_on_exit(struct Screen *screen, struct Match *matc
 	game->check_out   = get_chooser_from_bundle(&g_chooser_bundle, LINE_INDEX_CHECK_OUT)->value;
 
 	player_list_reset_wins(&match->player_list);
+	match->legs_played   = 0;
+	g_index_first_player = -1;
 }
 
 
