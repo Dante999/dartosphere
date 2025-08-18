@@ -1,6 +1,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include "libcutils/result.h"
+
 struct Color {
 	int r;
 	int g;
@@ -20,10 +22,11 @@ struct Config {
 
 	struct Color screen_color_font;
 	struct Color screen_color_highlight;
+	struct Color screen_color_background;
 };
 
 extern struct Config g_config;
 
-void config_init(void);
+Result config_init(const char *resources_path);
 
 #endif//  CONFIG_H

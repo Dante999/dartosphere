@@ -1,3 +1,6 @@
+#define UTIL_STRINGS_IMPLEMENTATION
+#include "libcutils/util_strings.h"
+
 #define RESULT_IMPLEMENTATION
 #include "libcutils/result.h"
 
@@ -10,7 +13,7 @@
 #include "screen.h"
 
 #include <unistd.h>
-
+#include <string.h>
 
 #define SCREEN_SCALE  1.0f
 #define SCREEN_WIDTH  800*SCREEN_SCALE
@@ -21,10 +24,21 @@
 
 
 
-int main(void)
+int main(int argc, char **argv)
 {
 	log_info("Application started!\n");
-	config_init();
+
+	char resources_path[255] = "../resources";
+
+	if (argc > 1) {
+		strncpy(resources_path, argv[1], sizeof(resources_path));
+	}
+	Result result = config_init(resources_path);
+
+	if (!result.success) {
+		log_error("Failed to load config: %s\n", result.msg);
+		return 1;
+	}
 
 	struct Match match = {0};
 	match_init(&match);
@@ -34,9 +48,9 @@ int main(void)
 	game_screen_init(&screen, &match);
 	game_screen_get_current(&screen)->on_enter(&screen, &match);
 
-	Result r = screen_init(&screen, SCREEN_WIDTH, SCREEN_HEIGHT);
-	if (!r.success) {
-		log_error("failed to load screen: %s\n", r.msg);
+	result = screen_init(&screen, SCREEN_WIDTH, SCREEN_HEIGHT);
+	if (!result.success) {
+		log_error("failed to load screen: %s\n", result.msg);
 		return 1;
 	}
 

@@ -14,8 +14,6 @@
 #include "libcutils/logger.h"
 #include "libcutils/util_makros.h"
 
-static SDL_Color g_color_black = {0, 0 , 0, 255};
-
 #define STATUS_BOX_WIDTH    (SCREEN_LOGICAL_WIDTH-(2*SCREEN_BORDER_WIDTH))
 #define STATUS_BOX_HEIGHT   50
 #define Y_OFFSET_STATUS_MSG (SCREEN_LOGICAL_HEIGHT-SCREEN_BORDER_WIDTH-STATUS_BOX_HEIGHT)
@@ -81,10 +79,17 @@ void screen_draw_text(struct Screen *screen, int x, int y, int font_size, const 
 
 	TTF_SetFontSize(screen->font, font_size);
 
+	SDL_Color font_color = {
+		.r = g_config.screen_color_font.r,
+		.g = g_config.screen_color_font.g,
+		.b = g_config.screen_color_font.b,
+		.a = g_config.screen_color_font.a,
+	};
+
 	SDL_Surface *tmp_surface = TTF_RenderText_Blended(
 			screen->font,
 			buffer,
-			g_color_black
+			font_color
 			);
 
 	SDL_Texture *texture = SDL_CreateTextureFromSurface(
@@ -118,10 +123,17 @@ void screen_draw_text_boxed(struct Screen *screen, int x, int y, int font_size, 
 
 	TTF_SetFontSize(screen->font, font_size);
 
+	SDL_Color font_color = {
+		.r = g_config.screen_color_font.r,
+		.g = g_config.screen_color_font.g,
+		.b = g_config.screen_color_font.b,
+		.a = g_config.screen_color_font.a,
+	};
+
 	SDL_Surface *tmp_surface = TTF_RenderText_Blended(
 			screen->font,
 			buffer,
-			g_color_black
+			font_color
 			);
 
 	SDL_Texture *texture = SDL_CreateTextureFromSurface(
@@ -138,11 +150,11 @@ void screen_draw_text_boxed(struct Screen *screen, int x, int y, int font_size, 
 	const int text_width = text_rect.w+2*TEXT_BORDER;
 
 	SDL_Rect outlineRect = {
-		.x = x-TEXT_BORDER, 
-		.y = y-TEXT_BORDER, 
+		.x = x-TEXT_BORDER,
+		.y = y-TEXT_BORDER,
 		.w = MAX(min_width, text_width), // pick greater one
 		.h = text_rect.h+2*TEXT_BORDER
-	}; 
+	};
 
 	if (is_selected) {
 		screen_set_color(screen, SCREEN_COLOR_HIGHLIGHT);
@@ -284,6 +296,7 @@ Result screen_init(struct Screen *screen, int width, int height)
 	}
 
 	SDL_RenderSetLogicalSize(screen->renderer, SCREEN_LOGICAL_WIDTH, SCREEN_LOGICAL_HEIGHT);
+	SDL_SetRenderDrawBlendMode(screen->renderer, SDL_BLENDMODE_BLEND);
 
 	char font_filepath[1024];
 	snprintf(font_filepath, sizeof(font_filepath), "%s/%s",  g_config.resources_dir, g_config.font_file);
@@ -329,7 +342,8 @@ bool screen_rendering_start(struct Screen *screen)
 	}
 
 	// Initialize renderer color white for the background
-	check_sdl(SDL_SetRenderDrawColor(screen->renderer, 0xFF, 0xFF, 0xFF, 0xFF));
+	struct Color *bg = &g_config.screen_color_background;
+	check_sdl(SDL_SetRenderDrawColor(screen->renderer, bg->r, bg->g, bg->b, bg->a));
 
 	// Clear screen
 	check_sdl(SDL_RenderClear(screen->renderer));
