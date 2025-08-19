@@ -72,7 +72,7 @@ static void screen_show_players(struct Screen *screen, struct Match *match)
 
 		//const int x = (1+i)*SCREEN_BORDER_WIDTH + (i*PLAYER_BOX_SIZE);
 		const int x = SCREEN_BORDER_WIDTH*2;
-		int y = Y_OFFSET_PLAYER_NAMES + (i*(BOX_PLAYER_NAME_HEIGHT+10));
+		int y = Y_OFFSET_PLAYER_NAMES + (i*(TEXT_FONT_SIZE+2*15));
 
 		bool is_selected = (g_line_cursor.index == (int)(i+LINE_INDEX_PLAYER_AMOUNT+1));
 

@@ -78,6 +78,8 @@ void screen_draw_header(struct Screen *screen);
 void screen_draw_status(struct Screen *screen);
 void screen_draw_text(struct Screen *screen, int x, int y, int font_size, const char *fmt, ...);
 void screen_draw_text_boxed(struct Screen *screen, int x, int y, int font_size, int min_width, bool is_selected, const char *fmt, ...);
+void screen_draw_box(struct Screen *screen, int x, int y, int width, int height, bool is_selected);
+
 
 void screen_draw_option(
 	struct Screen *screen,

@@ -26,7 +26,7 @@ static int g_index_first_player  = -1;
 
 #define PLAYER_BOX_SIZE ((800-(2+MAX_PLAYER_COUNT)*SCREEN_BORDER_WIDTH)/MAX_PLAYER_COUNT)
 
-#define TURN_BOX_WIDTH   100
+#define TURN_BOX_WIDTH   150
 #define TURN_BOX_HEIGHT  50
 
 
@@ -72,29 +72,22 @@ static void screen_show_turn(struct Screen *screen, struct Match *match)
 		const int x = x_start + (1+i)*SCREEN_BORDER_WIDTH + i*TURN_BOX_WIDTH;
 		const int y = Y_OFFSET_TURN;
 
-
-		SDL_Rect outlineRect = {x-10, y-8, TURN_BOX_WIDTH, TURN_BOX_HEIGHT}; // x, y, width, height
 		bool is_active_throw = ((int) i == turn->index_active_dart);
 
-		if (is_active_throw) {
-			screen_set_color(screen, SCREEN_COLOR_HIGHLIGHT);
-			SDL_RenderFillRect(screen->renderer, &outlineRect);
-		}
-
-		screen_set_color(screen, SCREEN_COLOR_FONT);
-		SDL_RenderDrawRect(screen->renderer, &outlineRect);
-
+		char value[50] = {0};
 		if (dart->field_value != -1) {
-			screen_draw_text(screen, x, y-3, g_config.screen_font_size_xl, "%c%d",
+			snprintf(value, sizeof(value), "%c%d", 
 				field_type_as_char(dart->field_type),
 				dart->field_value);
 		}
-		else if (is_active_throw) {
-			screen_draw_text(screen, x, y-3, g_config.screen_font_size_xl, "%c-",
-				field_type_as_char(dart->field_type),
-				dart->field_value);
+		else {
+			snprintf(value, sizeof(value), "%c-", 
+				field_type_as_char(dart->field_type));
 		}
 
+		screen_draw_text_boxed(screen, x, y, 
+			g_config.screen_font_size_xl, TURN_BOX_WIDTH, is_active_throw, 
+			"%s", value);
 	}
 
 }

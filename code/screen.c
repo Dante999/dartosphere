@@ -11,15 +11,21 @@
 #include <SDL_keycode.h>
 #include <SDL_timer.h>
 
+
 #include "libcutils/logger.h"
 #include "libcutils/util_makros.h"
 
 #define STATUS_BOX_WIDTH    (SCREEN_LOGICAL_WIDTH-(2*SCREEN_BORDER_WIDTH))
+#define HEADER_BOX_WIDTH    (SCREEN_LOGICAL_WIDTH-(2*SCREEN_BORDER_WIDTH))
+#define HEADER_BOX_HEIGHT_1   30
+#define HEADER_BOX_HEIGHT_2   50
+#define HEADER_BOX_HEIGHT_3   100
 #define STATUS_BOX_HEIGHT   50
+
 #define Y_OFFSET_STATUS_MSG (SCREEN_LOGICAL_HEIGHT-SCREEN_BORDER_WIDTH-STATUS_BOX_HEIGHT)
 
 #define TEXT_BORDER 10
-
+#define CORNER_CUT  20
 void screen_set_color(struct Screen *screen, enum Screen_Color color)
 {
 	struct Color *ptr = NULL;
@@ -107,6 +113,27 @@ void screen_draw_text(struct Screen *screen, int x, int y, int font_size, const 
 	SDL_RenderCopy(screen->renderer, texture, NULL, &text_rect);
 	SDL_DestroyTexture(texture);
 }
+void screen_draw_box(struct Screen *screen, int x, int y, int width, int height, bool is_selected)
+{
+	if (is_selected) {
+		SDL_Rect rect = { .x = x, .y = y, .w = width, .h = height};
+		screen_set_color(screen, SCREEN_COLOR_HIGHLIGHT);
+		SDL_RenderFillRect(screen->renderer, &rect);
+	}
+
+	SDL_Point points[] = {
+		{.x = x                 , .y = y},
+		{.x = x+width           , .y = y},
+		{.x = x+width           , .y = y+height-CORNER_CUT},
+		{.x = x+width-CORNER_CUT, .y = y+height},
+		{.x = x                 , .y = y+height},
+		{.x = x                 , .y = y},
+	};
+
+	screen_set_color(screen, SCREEN_COLOR_FONT);
+	SDL_RenderDrawLines(screen->renderer, points, ARRAY_SIZE(points));
+
+}
 
 void screen_draw_text_boxed(struct Screen *screen, int x, int y, int font_size, int min_width, bool is_selected, const char *fmt, ...)
 {
@@ -120,6 +147,9 @@ void screen_draw_text_boxed(struct Screen *screen, int x, int y, int font_size, 
 	va_start(arg_list, fmt);
 	vsnprintf(buffer, sizeof(buffer), fmt, arg_list);
 	va_end(arg_list);
+
+	// quickfix, draw anything to avoid tmp_surface is null
+	if (strlen(buffer) == 0) buffer[0] = ' ';
 
 	TTF_SetFontSize(screen->font, font_size);
 
@@ -149,20 +179,14 @@ void screen_draw_text_boxed(struct Screen *screen, int x, int y, int font_size, 
 
 	const int text_width = text_rect.w+2*TEXT_BORDER;
 
-	SDL_Rect outlineRect = {
-		.x = x-TEXT_BORDER,
-		.y = y-TEXT_BORDER,
-		.w = MAX(min_width, text_width), // pick greater one
-		.h = text_rect.h+2*TEXT_BORDER
-	};
-
-	if (is_selected) {
-		screen_set_color(screen, SCREEN_COLOR_HIGHLIGHT);
-		SDL_RenderFillRect(screen->renderer, &outlineRect);
-	}
-
-	screen_set_color(screen, SCREEN_COLOR_FONT);
-	SDL_RenderDrawRect(screen->renderer, &outlineRect);
+	screen_draw_box(
+		screen, 
+		x-TEXT_BORDER,
+		y-TEXT_BORDER,
+		MAX(min_width, text_width), // pick greater one
+		text_rect.h+2*TEXT_BORDER,
+		is_selected
+	);
 
 	SDL_FreeSurface(tmp_surface);
 	SDL_RenderCopy(screen->renderer, texture, NULL, &text_rect);
@@ -174,19 +198,32 @@ void screen_draw_status(struct Screen *screen)
 	const int x = SCREEN_BORDER_WIDTH;
 	const int y = Y_OFFSET_STATUS_MSG;
 
-	screen_set_color(screen, SCREEN_COLOR_FONT);
-
-	SDL_Rect outlineRect = {x, y, STATUS_BOX_WIDTH, STATUS_BOX_HEIGHT}; // x, y, width, height
-	SDL_RenderDrawRect(screen->renderer, &outlineRect);
-	screen_draw_text(screen, x+5, y+5, g_config.screen_font_size_l, screen->status);
+	screen_draw_text_boxed(
+		screen, 
+		x+SCREEN_BORDER_WIDTH, 
+		y, 
+		g_config.screen_font_size_l, 
+		STATUS_BOX_WIDTH, 
+		false, 
+		"%s", screen->status);
 }
 
 void screen_draw_header(struct Screen *screen)
 {
-	const int x = SCREEN_BORDER_WIDTH;
-	int       y = SCREEN_BORDER_WIDTH;;
+	int x = SCREEN_BORDER_WIDTH;
+	int y = SCREEN_BORDER_WIDTH;;
 
+	int box_height = HEADER_BOX_HEIGHT_3;
 
+	if (strlen(screen->header.line1) == 0 && strlen(screen->header.line2) == 0) {
+		box_height = HEADER_BOX_HEIGHT_1;
+	}
+	if (strlen(screen->header.line1) == 0) {
+		box_height = HEADER_BOX_HEIGHT_2;
+	}
+	screen_draw_box(screen, x, y, HEADER_BOX_WIDTH, box_height, false);
+
+	x += SCREEN_BORDER_WIDTH;
 	screen_draw_text(screen, x, y, g_config.screen_font_size_l, screen->header.line0);
 	y+= g_config.screen_font_size_l+5;
 
@@ -235,7 +272,7 @@ void screen_draw_option(
 	const char *fmt_value, ...)
 {
 	int x = SCREEN_BORDER_WIDTH;
-	int y = Y_OFFSET_CHOOSER + (y_index * 55);
+	int y = Y_OFFSET_CHOOSER + (y_index * (g_config.screen_font_size_l+2*TEXT_BORDER+10));
 
 	screen_draw_text(screen, x, y, g_config.screen_font_size_l, "%s", name);
 	x += name_width;
