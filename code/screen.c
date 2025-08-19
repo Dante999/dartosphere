@@ -83,6 +83,12 @@ void screen_draw_text(struct Screen *screen, int x, int y, int font_size, const 
 	vsnprintf(buffer, sizeof(buffer), fmt, arg_list);
 	va_end(arg_list);
 
+	// quickfix, draw anything to avoid tmp_surface is null
+	if (strlen(buffer) == 0) {
+		buffer[0] = ' ';
+		buffer[1] = '\0';
+	}
+
 	TTF_SetFontSize(screen->font, font_size);
 
 	SDL_Color font_color = {
@@ -149,7 +155,10 @@ void screen_draw_text_boxed(struct Screen *screen, int x, int y, int font_size, 
 	va_end(arg_list);
 
 	// quickfix, draw anything to avoid tmp_surface is null
-	if (strlen(buffer) == 0) buffer[0] = ' ';
+	if (strlen(buffer) == 0) {
+		buffer[0] = ' ';
+		buffer[1] = '\0';
+	}
 
 	TTF_SetFontSize(screen->font, font_size);
 
