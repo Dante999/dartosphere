@@ -11,6 +11,7 @@
 #include "darts.h"
 #include "game_screen.h"
 #include "screen.h"
+#include "sound.h"
 
 #include <unistd.h>
 #include <string.h>
@@ -54,6 +55,11 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
+	result = sound_init();
+	if (!result.success) {
+		log_error("failed to init sound: %s\n", result.msg);
+		return 1;
+	}
 
 	bool quit = false;
 

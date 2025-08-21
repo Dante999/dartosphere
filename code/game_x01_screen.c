@@ -6,6 +6,7 @@
 #include "player.h"
 #include "screen.h"
 #include "screen_utils.h"
+#include "sound.h"
 
 #include "libcutils/util_makros.h"
 #include "libcutils/logger.h"
@@ -116,6 +117,7 @@ static void playing_screen_next_step(struct Screen *screen, struct Match *match)
 		return;
 	}
 	else {
+		sound_play_score(player_get_current_dart_throw(active_player));
 		game_screen_set_status(screen, "");
 	}
 
@@ -300,6 +302,7 @@ void screen_play_game_x01_refresh(struct Screen *screen, struct Match *match)
 
 void screen_play_game_x01_on_enter(struct Screen *screen, struct Match *match)
 {
+	sound_play_game_on();
 	struct Game_X01 *game = game_x01_get_instance();
 
 	for( size_t i=0; i < match->player_list.count; ++i) {

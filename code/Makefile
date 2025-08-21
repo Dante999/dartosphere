@@ -1,6 +1,6 @@
 PROJECT=dartosphere
 CC_FLAGS = -Wall -Wextra -Werror -Wpedantic -I../thirdparty/libcutils/include
-LD_FLAGS = -lSDL2_ttf
+LD_FLAGS = -lSDL2_ttf -lSDL2_mixer
 
 LIBS=`sdl2-config --cflags --libs`
 
@@ -17,6 +17,7 @@ all:
 		screen_player_selection.c \
 		screen_game_selection.c \
 		screen_utils.c \
+		sound.c \
 		darts.c \
 		${LIBS} \
 		${LD_FLAGS}

@@ -300,7 +300,7 @@ void screen_draw_option(
 Result screen_init(struct Screen *screen, int width, int height)
 {
 
-	if(SDL_Init(SDL_INIT_VIDEO) < 0)
+	if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
 	{
 		return result_make(false, "SDL could not be initialized!\n"
 			"SDL_Error: %s\n", SDL_GetError());
