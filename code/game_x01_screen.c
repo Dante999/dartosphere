@@ -21,77 +21,7 @@ enum Game_Status {
 static enum Game_Status g_status = GAME_STATUS_PLAYING;
 static int g_index_first_player  = -1;
 
-#define Y_OFFSET_HEADER     SCREEN_BORDER_WIDTH
-#define Y_OFFSET_PLAYER     120
-#define Y_OFFSET_TURN       400
 
-#define PLAYER_BOX_SIZE ((800-(2+MAX_PLAYER_COUNT)*SCREEN_BORDER_WIDTH)/MAX_PLAYER_COUNT)
-
-#define TURN_BOX_WIDTH   150
-#define TURN_BOX_HEIGHT  50
-
-
-static void screen_show_players(struct Screen *screen, struct Match *match)
-{
-	for (size_t i=0; i < match->player_list.count; ++i) {
-		struct Player *player = &match->player_list.items[i];
-
-		const int x = (1+i)*SCREEN_BORDER_WIDTH + (i*PLAYER_BOX_SIZE);
-		const int y = Y_OFFSET_PLAYER;
-		int player_score = player->score;
-
-		SDL_Rect outlineRect = {x, y, PLAYER_BOX_SIZE, PLAYER_BOX_SIZE}; // x, y, width, height
-		if ((int) i == match->player_list.index_active_player) {
-			screen_set_color(screen, SCREEN_COLOR_HIGHLIGHT);;
-			SDL_RenderFillRect(screen->renderer, &outlineRect);
-			player_score -= player_get_score_from_current_turn(player);
-		}
-		screen_set_color(screen, SCREEN_COLOR_FONT);
-		SDL_RenderDrawRect(screen->renderer, &outlineRect);
-
-		screen_draw_text(screen, x+10, y+10,  g_config.screen_font_size_m ,  player->name);
-		screen_draw_text(screen, x+10, y+50,  g_config.screen_font_size_xl, "%d", player_score);
-		screen_draw_text(screen, x+10, y+120, g_config.screen_font_size_xs, "legs: %d", player->legs_won);
-	}
-}
-
-#define X_OFFSET_TURN   120
-#define TURN_Y_TEXT_OFFSET 10
-
-static void screen_show_turn(struct Screen *screen, struct Match *match)
-{
-	screen_set_color(screen, SCREEN_COLOR_FONT);
-	screen_draw_text(screen, SCREEN_BORDER_WIDTH, Y_OFFSET_TURN, g_config.screen_font_size_l, "Turn: ");
-
-	const int x_start = SCREEN_BORDER_WIDTH + 130;
-
-	struct Turn *turn = &match->player_list.items[match->player_list.index_active_player].turn;
-
-	for (size_t i=0; i < ARRAY_SIZE(turn->dart); ++i) {
-		struct Dart_Hit *dart = &turn->dart[i];
-
-		const int x = x_start + (1+i)*SCREEN_BORDER_WIDTH + i*TURN_BOX_WIDTH;
-		const int y = Y_OFFSET_TURN;
-
-		bool is_active_throw = ((int) i == turn->index_active_dart);
-
-		char value[50] = {0};
-		if (dart->field_value != -1) {
-			snprintf(value, sizeof(value), "%c%d", 
-				field_type_as_char(dart->field_type),
-				dart->field_value);
-		}
-		else {
-			snprintf(value, sizeof(value), "%c-", 
-				field_type_as_char(dart->field_type));
-		}
-
-		screen_draw_text_boxed(screen, x, y, 
-			g_config.screen_font_size_xl, TURN_BOX_WIDTH, is_active_throw, 
-			"%s", value);
-	}
-
-}
 
 static void playing_set_header(struct Screen *screen, struct Match *match)
 {
@@ -279,8 +209,8 @@ static void screen_play_game_x01_game_on(struct Screen *screen, struct Match *ma
 	}
 
 	playing_set_header(screen, match);
-	screen_show_players(screen, match);
-	screen_show_turn(screen, match);
+	game_screen_draw_players(screen, match);
+	game_screen_draw_turn(screen, match);
 }
 
 void screen_play_game_x01_refresh(struct Screen *screen, struct Match *match)
