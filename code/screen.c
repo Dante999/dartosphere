@@ -10,7 +10,7 @@
 #include <SDL_ttf.h>
 #include <SDL_keycode.h>
 #include <SDL_timer.h>
-
+#include <SDL2_gfxPrimitives.h>
 
 #include "libcutils/logger.h"
 #include "libcutils/util_makros.h"
@@ -119,14 +119,9 @@ void screen_draw_text(struct Screen *screen, int x, int y, int font_size, const 
 	SDL_RenderCopy(screen->renderer, texture, NULL, &text_rect);
 	SDL_DestroyTexture(texture);
 }
+
 void screen_draw_box(struct Screen *screen, int x, int y, int width, int height, bool is_selected)
 {
-	if (is_selected) {
-		SDL_Rect rect = { .x = x, .y = y, .w = width, .h = height};
-		screen_set_color(screen, SCREEN_COLOR_HIGHLIGHT);
-		SDL_RenderFillRect(screen->renderer, &rect);
-	}
-
 	SDL_Point points[] = {
 		{.x = x                 , .y = y},
 		{.x = x+width           , .y = y},
@@ -136,9 +131,23 @@ void screen_draw_box(struct Screen *screen, int x, int y, int width, int height,
 		{.x = x                 , .y = y},
 	};
 
+	if (is_selected) {
+		int16_t x_vec[ARRAY_SIZE(points)];
+		int16_t y_vec[ARRAY_SIZE(points)];
+
+		for (size_t i=0; i < ARRAY_SIZE(points); ++i) {
+			x_vec[i] = points[i].x;
+			y_vec[i] = points[i].y;
+		}
+		struct Color *col = &g_config.screen_color_highlight;
+		filledPolygonRGBA(screen->renderer, x_vec, y_vec, ARRAY_SIZE(points), col->r, col->g, col->b, col->a);
+	}
+
 	screen_set_color(screen, SCREEN_COLOR_FONT);
 	SDL_RenderDrawLines(screen->renderer, points, ARRAY_SIZE(points));
 
+
+#endif
 }
 
 void screen_draw_text_boxed(struct Screen *screen, int x, int y, int font_size, int min_width, bool is_selected, const char *fmt, ...)

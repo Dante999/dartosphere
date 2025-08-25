@@ -67,7 +67,7 @@ void sound_play_score(struct Dart_Hit *hit)
 			Mix_PlayMusic(music_type, 0);
 
 			while (Mix_PlayingMusic()) {
-				SDL_Delay(100); // Delay to avoid busy waiting
+				SDL_Delay(10); // Delay to avoid busy waiting
 			}
 		}
 		if (music_value != NULL) {
