@@ -5,6 +5,7 @@
 #include "screen_welcome.h"
 #include "screen_player_selection.h"
 #include "screen_game_selection.h"
+#include "game_gotcha_screen.h"
 #include "game_x01_screen.h"
 #include "config.h"
 
@@ -21,9 +22,9 @@ static struct Game_Mode g_game_modes[] = {
 		.screen_id = GAME_SCREEN_GAME_X01_CONFIGURE
 	},
 	{
-		.name = "Around the Clock",
-		.description = "Hit all fields",
-		.screen_id = GAME_SCREEN_UNDEFINED
+		.name = "Gotcha!",
+		.description = "Like X01 but with resetting scores of others",
+		.screen_id = GAME_SCREEN_GAME_GOTCHA_CONFIGURE
 	}
 };
 
@@ -67,6 +68,22 @@ static struct Game_Screen g_game_screens[] = {
 		.on_exit         = screen_play_game_x01_on_exit,
 		.next_screen     = GAME_SCREEN_SELECT_PLAYERS,
 		.previous_screen = GAME_SCREEN_GAME_X01_CONFIGURE,
+	},
+	{
+		.id              = GAME_SCREEN_GAME_GOTCHA_CONFIGURE,
+		.on_enter        = screen_configure_game_gotcha_on_enter,
+		.refresh         = screen_configure_game_gotcha_refresh,
+		.on_exit         = screen_configure_game_gotcha_on_exit,
+		.next_screen     = GAME_SCREEN_GAME_GOTCHA_PLAY,
+		.previous_screen = GAME_SCREEN_SELECT_GAME,
+	},
+	{
+		.id              = GAME_SCREEN_GAME_GOTCHA_PLAY,
+		.on_enter        = screen_play_game_gotcha_on_enter,
+		.refresh         = screen_play_game_gotcha_refresh,
+		.on_exit         = screen_play_game_gotcha_on_exit,
+		.next_screen     = GAME_SCREEN_SELECT_PLAYERS,
+		.previous_screen = GAME_SCREEN_GAME_GOTCHA_CONFIGURE,
 	}
 };
 
