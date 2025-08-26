@@ -153,24 +153,21 @@ void game_screen_set_status(struct Screen *screen, const char *fmt, ...)
 #define Y_OFFSET_PLAYER     120
 #define PLAYER_BOX_SIZE ((800-(2+MAX_PLAYER_COUNT)*SCREEN_BORDER_WIDTH)/MAX_PLAYER_COUNT)
 
-void game_screen_draw_players(struct Screen *screen, struct Match *match)
+void game_screen_draw_players(struct Screen *screen, struct Match *match, int (*get_score_of_current_player)(const struct Player *player))
 {
 	for (size_t i=0; i < match->player_list.count; ++i) {
 		struct Player *player = &match->player_list.items[i];
 
 		const int x = (1+i)*SCREEN_BORDER_WIDTH + (i*PLAYER_BOX_SIZE);
 		const int y = Y_OFFSET_PLAYER;
-		int player_score = player->score;
+		const bool is_selected = ((int) i == match->player_list.index_active_player) ? true : false;
 
-		SDL_Rect outlineRect = {x, y, PLAYER_BOX_SIZE, PLAYER_BOX_SIZE}; // x, y, width, height
-		if ((int) i == match->player_list.index_active_player) {
-			screen_set_color(screen, SCREEN_COLOR_HIGHLIGHT);;
-			SDL_RenderFillRect(screen->renderer, &outlineRect);
-			player_score -= player_get_score_from_current_turn(player);
-		}
+		// if player is selected, get temporary calculated score
+		int player_score = is_selected ? get_score_of_current_player(player) : player->score;
+
+		screen_draw_box(screen, x, y, PLAYER_BOX_SIZE, PLAYER_BOX_SIZE, is_selected);
+
 		screen_set_color(screen, SCREEN_COLOR_FONT);
-		SDL_RenderDrawRect(screen->renderer, &outlineRect);
-
 		screen_draw_text(screen, x+10, y+10,  g_config.screen_font_size_m ,  player->name);
 		screen_draw_text(screen, x+10, y+50,  g_config.screen_font_size_xl, "%d", player_score);
 		screen_draw_text(screen, x+10, y+120, g_config.screen_font_size_xs, "legs: %d", player->legs_won);

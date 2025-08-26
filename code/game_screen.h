@@ -6,6 +6,7 @@
 // forward declarations
 struct Screen;
 struct Match;
+struct Player;
 
 
 
@@ -56,7 +57,11 @@ void game_screen_set_status(struct Screen *screen, const char *fmt, ...);
 
 struct Game_Screen *game_screen_get_current(struct Screen *screen);
 
-void game_screen_draw_players(struct Screen *screen, struct Match *match);
+void game_screen_draw_players(
+	struct Screen *screen,
+	struct Match *match,
+	int (*get_score_of_current_player)(const struct Player *player));
+
 void game_screen_draw_turn(struct Screen *screen, struct Match *match);
 
 #endif

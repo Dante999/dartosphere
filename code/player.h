@@ -58,6 +58,6 @@ void player_end_turn(struct Player *player);
 bool player_next_dart_throw(struct Player *player);
 bool player_previous_dart_throw(struct Player *player);
 void player_clear_dart_throws(struct Player *player);
-int player_get_score_from_current_turn(struct Player *player);
+int player_get_score_from_current_turn(const struct Player *player);
 
 #endif // PLAYER_H

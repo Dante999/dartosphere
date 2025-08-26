@@ -21,6 +21,10 @@ enum Game_Status {
 static enum Game_Status g_status = GAME_STATUS_PLAYING;
 static int g_index_first_player  = -1;
 
+static int get_temp_score_of_current_player(const struct Player *player)
+{
+	return player->score - player_get_score_from_current_turn(player);
+}
 
 
 static void playing_set_header(struct Screen *screen, struct Match *match)
@@ -209,7 +213,7 @@ static void screen_play_game_x01_game_on(struct Screen *screen, struct Match *ma
 	}
 
 	playing_set_header(screen, match);
-	game_screen_draw_players(screen, match);
+	game_screen_draw_players(screen, match, get_temp_score_of_current_player);
 	game_screen_draw_turn(screen, match);
 }
 

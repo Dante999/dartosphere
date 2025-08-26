@@ -107,12 +107,12 @@ void player_list_reset_wins(struct Player_List *players)
 	}
 }
 
-int player_get_score_from_current_turn(struct Player *player)
+int player_get_score_from_current_turn(const struct Player *player)
 {
 	int score = 0;
 
 	for (size_t i=0; i < ARRAY_SIZE(player->turn.dart); ++i) {
-		struct Dart_Hit *hit = &player->turn.dart[i];
+		const struct Dart_Hit *hit = &player->turn.dart[i];
 
 		if (hit->field_value == DART_FIELD_VALUE_UNSET) continue;
 

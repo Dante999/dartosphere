@@ -24,7 +24,10 @@ enum Game_Status {
 static enum Game_Status g_status = GAME_STATUS_PLAYING;
 static int g_index_first_player  = -1;
 
-
+static int get_temp_score_of_current_player(const struct Player *player)
+{
+	return player->score + player_get_score_from_current_turn(player);
+}
 
 static void playing_set_header(struct Screen *screen, struct Match *match)
 {
@@ -138,7 +141,7 @@ static void playing_undo_turn(struct Match *match)
 
 static void handle_score_input(struct Screen *screen, struct Match *match)
 {
-	struct Player *active_player = player_list_get_active_player(&match->player_list);
+	struct Player   *active_player = player_list_get_active_player(&match->player_list);
 	struct Dart_Hit *current_throw = player_get_current_dart_throw(active_player);
 
 	if (screen->key_pressed == DKEY_DIVIDE) {
@@ -212,7 +215,7 @@ static void screen_play_game_gotcha_game_on(struct Screen *screen, struct Match 
 	}
 
 	playing_set_header(screen, match);
-	game_screen_draw_players(screen, match);
+	game_screen_draw_players(screen, match, get_temp_score_of_current_player);
 	game_screen_draw_turn(screen, match);
 }
 
