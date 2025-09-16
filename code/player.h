@@ -18,12 +18,12 @@ enum Field_Type {
 
 struct Dart_Hit{
 	enum Field_Type field_type;
-	int16_t    field_value;
+	int16_t         field_value;
 };
 
 struct Turn{
 	struct Dart_Hit dart[3];
-	int index_active_dart;
+	int             index_active_dart;
 };
 
 struct Player{

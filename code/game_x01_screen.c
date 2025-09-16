@@ -193,7 +193,7 @@ static void screen_play_game_x01_player_won_leg(struct Screen *screen, struct Ma
 		}
 		else {
 			match->legs_played++;
-			log_info("starting new leg\n");
+			log_info("starting new leg\n", NULL);
 			g_status = GAME_STATUS_PLAYING;
 			screen_play_game_x01_on_enter(screen, match);
 		}
@@ -236,7 +236,8 @@ void screen_play_game_x01_refresh(struct Screen *screen, struct Match *match)
 
 void screen_play_game_x01_on_enter(struct Screen *screen, struct Match *match)
 {
-	sound_play_game_on();
+	sound_play_effect(SOUND_EFFECT_GAME_ON);
+
 	struct Game_X01 *game = game_x01_get_instance();
 
 	for( size_t i=0; i < match->player_list.count; ++i) {

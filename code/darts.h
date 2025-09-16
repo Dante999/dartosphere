@@ -27,7 +27,6 @@ struct Match {
 
 char field_type_as_char(enum Field_Type type);
 void match_init(struct Match *match);
-void match_set_game_mode_list(struct Match *match, struct Game_Mode *modes, size_t modes_count);
 
 
 #endif // DARTS_H

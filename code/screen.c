@@ -363,7 +363,7 @@ Result screen_init(struct Screen *screen, int width, int height)
 
 void screen_destroy(struct Screen *screen)
 {
-	log_info("destroying SDL Window\n");
+	log_info("destroying SDL Window\n", NULL);
 	SDL_DestroyRenderer(screen->renderer);
 	SDL_DestroyWindow(screen->window);
 	SDL_Quit();

@@ -24,9 +24,3 @@ void match_init(struct Match *match)
 	match->round        = 0;
 }
 
-void match_set_game_mode_list(struct Match *match, struct Game_Mode *modes, size_t modes_count)
-{
-	match->game_mode_list.items = modes;
-	match->game_mode_list.count = modes_count;
-}
-

@@ -23,11 +23,11 @@
 
 
 
-
+// TODO: signalhandler for graceful closing when hitting CTR+C
 
 int main(int argc, char **argv)
 {
-	log_info("Application started!\n");
+	log_info("Application started!\n", NULL);
 
 	char resources_path[255] = "../resources";
 
@@ -65,7 +65,7 @@ int main(int argc, char **argv)
 
 	while(!quit) {
 		quit = screen_rendering_start(&screen);
-		
+
 		game_screen_get_current(&screen)->refresh(&screen, &match);
 		screen_draw_header(&screen);
 		screen_draw_status(&screen);
@@ -75,4 +75,5 @@ int main(int argc, char **argv)
 	}
 
 	screen_destroy(&screen);
+	sound_destroy();
 }

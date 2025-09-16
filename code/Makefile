@@ -1,5 +1,5 @@
 PROJECT=dartosphere
-CC_FLAGS = -Wall -Wextra -Werror -Wpedantic -I../thirdparty/libcutils/include
+CC_FLAGS = -std=c17 -Wall -Wextra -Werror -Wpedantic -I../thirdparty/libcutils/include
 LD_FLAGS = -lSDL2_ttf -lSDL2_mixer -lSDL2_gfx
 
 LIBS=`sdl2-config --cflags --libs`
