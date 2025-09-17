@@ -11,6 +11,11 @@
 #include "libcutils/util_makros.h"
 #include "libcutils/logger.h"
 
+static struct Game_X01 g_game = {
+	.start_score  = X01_SCORE_301,
+	.check_in     = X01_MODE_STRAIGHT,
+	.check_out    = X01_MODE_STRAIGHT,
+};
 
 enum Game_Status {
 	GAME_STATUS_PLAYING,
@@ -29,7 +34,7 @@ static int get_temp_score_of_current_player(const struct Player *player)
 
 static void playing_set_header(struct Screen *screen, struct Match *match)
 {
-	struct Game_X01 *game = game_x01_get_instance();
+	struct Game_X01 *game = &g_game;
 	struct Screen_Header *hf =&screen->header;
 
 	snprintf(hf->line0, sizeof(hf->line0), "Game: X01");
@@ -55,7 +60,7 @@ static void playing_screen_next_step(struct Screen *screen, struct Match *match)
 		game_screen_set_status(screen, "");
 	}
 
-	enum X01_Result res = game_x01_register_dart_throw(active_player);
+	enum X01_Result res = game_x01_register_dart_throw(&g_game, active_player);
 
 	switch (res) {
 		case X01_RESULT_CHECKOUT_NOT_SATISFIED: // fallthrough
@@ -238,7 +243,7 @@ void screen_play_game_x01_on_enter(struct Screen *screen, struct Match *match)
 {
 	sound_play_effect(SOUND_EFFECT_GAME_ON);
 
-	struct Game_X01 *game = game_x01_get_instance();
+	struct Game_X01 *game = &g_game;
 
 	for( size_t i=0; i < match->player_list.count; ++i) {
 		struct Player *player = &match->player_list.items[i];
@@ -362,7 +367,7 @@ void screen_configure_game_x01_on_enter(struct Screen *screen, struct Match *mat
 {
 	(void) screen;
 	(void) match;
-	struct Game_X01 *game = game_x01_get_instance();
+	struct Game_X01 *game = &g_game;
 
 	get_chooser_from_bundle(&g_chooser_bundle, LINE_INDEX_SCORE)->value     = game->start_score;
 	get_chooser_from_bundle(&g_chooser_bundle, LINE_INDEX_CHECK_IN)->value  = game->check_in;
@@ -373,7 +378,7 @@ void screen_configure_game_x01_on_exit(struct Screen *screen, struct Match *matc
 {
 	(void) screen;
 	(void) match;
-	struct Game_X01 *game = game_x01_get_instance();
+	struct Game_X01 *game = &g_game;
 
 	game->start_score = get_chooser_from_bundle(&g_chooser_bundle, LINE_INDEX_SCORE)->value;
 	game->check_in    = get_chooser_from_bundle(&g_chooser_bundle, LINE_INDEX_CHECK_IN)->value;

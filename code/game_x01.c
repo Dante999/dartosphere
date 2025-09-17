@@ -1,16 +1,5 @@
 #include "game_x01.h"
 
-static struct Game_X01 g_game = {
-	.start_score  = X01_SCORE_301,
-	.check_in     = X01_MODE_STRAIGHT,
-	.check_out    = X01_MODE_STRAIGHT,
-};
-
-struct Game_X01 *game_x01_get_instance(void)
-{
-	return &g_game;
-}
-
 const char *game_x01_score_as_string(enum X01_Score score)
 {
 	switch(score) {
@@ -43,7 +32,7 @@ int game_x01_get_start_score_as_int(struct Game_X01 *game)
 }
 
 
-enum X01_Result game_x01_register_dart_throw(struct Player *player)
+enum X01_Result game_x01_register_dart_throw(struct Game_X01 *game, struct Player *player)
 {
 	struct Dart_Hit *hit = player_get_current_dart_throw(player);
 
@@ -53,17 +42,17 @@ enum X01_Result game_x01_register_dart_throw(struct Player *player)
 	if (score_delta < 0) {
 		return X01_RESULT_PLAYER_OVERSHOOT;
 	}
-	if (score_delta > 0 && g_game.check_out == X01_MODE_STRAIGHT) {
+	if (score_delta > 0 && game->check_out == X01_MODE_STRAIGHT) {
 		return X01_RESULT_CONTINUE;
 	}
-	if (score_delta >= 2 && g_game.check_out == X01_MODE_DOUBLE) {
+	if (score_delta >= 2 && game->check_out == X01_MODE_DOUBLE) {
 		return X01_RESULT_CONTINUE;
 	}
-	if (score_delta >= 3 && g_game.check_out == X01_MODE_MASTER) {
+	if (score_delta >= 3 && game->check_out == X01_MODE_MASTER) {
 		return X01_RESULT_CONTINUE;
 	}
 
-	switch(g_game.check_out) {
+	switch(game->check_out) {
 		case X01_MODE_STRAIGHT:
 			return X01_RESULT_PLAYER_WON;
 

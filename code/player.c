@@ -128,6 +128,11 @@ struct Dart_Hit *player_get_current_dart_throw(struct Player *player)
 	return &player->turn.dart[player->turn.index_active_dart];
 }
 
+void player_set_dart_throw(struct Player *player, struct Dart_Hit hit)
+{
+	player->turn.dart[player->turn.index_active_dart] = hit;
+}
+
 void dart_hit_toggle_field_type(struct Dart_Hit *hit, enum Field_Type type)
 {
 	if (hit->field_type == type) {
@@ -151,4 +156,12 @@ int dart_hit_get_points(struct Dart_Hit *hit)
 	return get_field_type_multiplier(hit->field_type) * hit->field_value;
 }
 
+struct Dart_Hit dart_hit_make(enum Field_Type field_type, int16_t field_value)
+{
+	struct Dart_Hit hit = {
+		.field_type  = field_type,
+		.field_value = field_value
+	};
+	return hit;
+}
 

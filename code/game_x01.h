@@ -39,7 +39,7 @@ struct Game_X01 *game_x01_get_instance(void);
 
 int game_x01_get_start_score_as_int(struct Game_X01 *game);
 
-enum X01_Result game_x01_register_dart_throw(struct Player *player);
+enum X01_Result game_x01_register_dart_throw(struct Game_X01 *game, struct Player *player);
 
 
 #endif // GAME_X01_H
