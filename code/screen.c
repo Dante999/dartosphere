@@ -253,6 +253,7 @@ static void screen_handle_keypress(struct Screen *screen, SDL_Keysym *key)
 {
 	switch(key->sym) {
 
+	case SDLK_q           : screen->quit = true;                 break;
 	case SDLK_KP_ENTER    : screen->key_pressed = DKEY_ENTER;    break;
 	case SDLK_KP_PLUS     : screen->key_pressed = DKEY_PLUS;     break;
 	case SDLK_KP_MINUS    : screen->key_pressed = DKEY_MINUS;    break;
@@ -358,6 +359,7 @@ Result screen_init(struct Screen *screen, int width, int height)
 		return r;
 	}
 
+	screen->quit = false;
 	return result_make(true, "");
 }
 
@@ -369,12 +371,9 @@ void screen_destroy(struct Screen *screen)
 	SDL_Quit();
 }
 
-bool screen_rendering_start(struct Screen *screen)
+void screen_rendering_start(struct Screen *screen)
 {
 	screen->ticks = SDL_GetTicks();
-
-
-	bool quit = false;
 
 	SDL_Event event;
 
@@ -385,7 +384,7 @@ bool screen_rendering_start(struct Screen *screen)
 		switch (event.type) {
 
 		case SDL_QUIT:
-			quit = true;
+			screen->quit = true;
 			break;
 		case SDL_KEYDOWN:
 			screen_handle_keypress(screen, &event.key.keysym);
@@ -399,8 +398,6 @@ bool screen_rendering_start(struct Screen *screen)
 
 	// Clear screen
 	check_sdl(SDL_RenderClear(screen->renderer));
-
-	return quit;
 }
 
 void screen_rendering_stop(struct Screen *screen)

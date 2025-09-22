@@ -53,6 +53,7 @@ struct Screen {
 	SDL_Renderer   *renderer;
 	TTF_Font       *font;
 	uint32_t       ticks;
+	bool           quit;
 	struct Screen_Header header;
 	char status[255];
 	struct Game_Screen_List game_screen_list;
@@ -70,7 +71,7 @@ int screen_key_numeric_value(enum Screen_Key key);
 
 Result screen_init(struct Screen *screen, int width, int height);
 void screen_destroy(struct Screen *screen);
-bool screen_rendering_start(struct Screen *screen);
+void screen_rendering_start(struct Screen *screen);
 void screen_rendering_stop(struct Screen *screen);
 
 void screen_set_color(struct Screen *screen, enum Screen_Color color);

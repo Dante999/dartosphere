@@ -61,10 +61,8 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	bool quit = false;
-
-	while(!quit) {
-		quit = screen_rendering_start(&screen);
+	while (!screen.quit) {
+		screen_rendering_start(&screen);
 
 		game_screen_get_current(&screen)->refresh(&screen, &match);
 		screen_draw_header(&screen);
