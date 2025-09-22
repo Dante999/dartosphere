@@ -5,7 +5,8 @@ all:
 		main.c \
 		test_game_x01.c \
 		../code/game_x01.c \
-		../code/player.c
+		../code/player.c \
+		../code/config.c
 
 clean:
 	rm dartosphere_tests

@@ -1,5 +1,7 @@
 #include "player.h"
 
+#include "config.h"
+
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
@@ -18,14 +20,41 @@ static int get_field_type_multiplier(enum Field_Type type)
 
 void player_list_init(struct Player_List *players)
 {
+	// set default names
 	for (size_t i=0; i < MAX_PLAYER_COUNT; ++i) {
 		snprintf(players->items[i].name,
 			MAX_PLAYER_NAME_LEN,
 			"Player %zu",
 			i+1);
 	}
-
 	players->count = 1;
+
+
+	// override with content from players.txt
+	char buffer[512];
+
+	snprintf(buffer, sizeof(buffer), "%s/players.txt", g_config.resources_dir);
+
+	FILE *players_file = fopen(buffer, "r");
+
+	if (players_file == NULL) {
+		return;
+	}
+
+	size_t i=0;
+	while (fgets(buffer, sizeof(buffer), players_file)) {
+
+		if (i <  MAX_PLAYER_COUNT) { 
+			strncpy(players->items[i].name, buffer, MAX_PLAYER_NAME_LEN);
+			++i;
+		}
+		else 
+		{
+			break;
+		}
+	}
+
+	fclose(players_file);
 }
 
 

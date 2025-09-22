@@ -1,3 +1,5 @@
-code/dartosphere
-tests/dartosphere_tests
+/code/dartosphere
+/tests/dartosphere_tests
+/resources/players.txt
+
 *.swp
