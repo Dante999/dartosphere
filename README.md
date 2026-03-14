@@ -1,3 +1,7 @@
+# MOVED TO CODEBERG.ORG
+
+see https://codeberg.org/dante999/dartosphere
+
 # Dartosphere
 A very lightweight desktop application of a darts scoreboard with a UI style
 inspired by Cyberpunk 2077.
